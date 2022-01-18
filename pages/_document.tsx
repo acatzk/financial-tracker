@@ -6,7 +6,7 @@ class Document extends NextDocument {
     return (
       <Html className="overflow-y-scroll">
         <Head>
-          <link rel="icon" href="/assets/images/logo.png" />
+          {/* <link rel="icon" href="/assets/images/logo.png" /> */}
           <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
           {/* eslint-disable-next-line @next/next/no-page-custom-font */}
           <link
