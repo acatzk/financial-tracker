@@ -2,10 +2,14 @@ import { NextPage } from 'next'
 import Layout from 'components/Layout'
 import Image from 'next/image'
 import { classNames } from 'utils'
+import LoginDialog from 'components/LoginDialog'
+import { useState } from 'react'
 
 const index: NextPage = () => {
+  const [open, setOpen] = useState(false)
+
   return (
-    <Layout metaHead="Signin">
+    <Layout metaHead="Sign in">
       <div className="relative bg-white overflow-hidden min-h-screen">
         <div className="max-w-7xl mx-auto">
           <div className="relative bg-white lg:max-w-2xl lg:w-full ">
@@ -20,11 +24,14 @@ const index: NextPage = () => {
                 </p>
                 <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
                   <div className="rounded-md shadow">
+                    <LoginDialog open={open} setOpen={setOpen} />
                     <button
+                      onClick={() => setOpen(true)}
                       className={classNames(
                         'w-full flex items-center justify-center px-8 py-3 border border-transparent',
                         'text-base font-medium rounded-md border-indigo-600 text-indigo-600',
                         'hover:bg-indigo-600 hover:text-white md:py-4 md:text-lg md:px-10',
+                        'focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500',
                         'transition ease-in-out duration-150 active:bg-indigo-700'
                       )}>
                       Sign in
