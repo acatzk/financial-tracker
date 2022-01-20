@@ -5,7 +5,7 @@ import { classNames } from 'utils'
 import LoginDialog from 'components/LoginDialog'
 import { useState } from 'react'
 
-const index: NextPage = () => {
+const Index: NextPage = () => {
   const [open, setOpen] = useState(false)
 
   return (
@@ -57,4 +57,4 @@ const index: NextPage = () => {
   )
 }
 
-export default index
+export default Index

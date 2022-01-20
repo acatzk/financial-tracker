@@ -5,7 +5,8 @@ module.exports = {
     domains: [
       'tailwindui.com',
       'images.unsplash.com',
-      'media.istockphoto.com'
+      'media.istockphoto.com',
+      'avatars.githubusercontent.com'
     ]
   }
 }
