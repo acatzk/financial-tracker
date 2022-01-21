@@ -1,12 +1,12 @@
 import React from 'react'
 import Head from 'next/head'
 
-interface LayoutProps {
+interface DefaultLayoutProps {
   children: React.ReactNode
   metaHead?: string
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, metaHead }) => {
+const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children, metaHead }) => {
   return (
     <React.Fragment>
       <Head>
@@ -17,4 +17,4 @@ const Layout: React.FC<LayoutProps> = ({ children, metaHead }) => {
   )
 }
 
-export default Layout
+export default DefaultLayout

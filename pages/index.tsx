@@ -1,5 +1,5 @@
 import { NextPage } from 'next'
-import Layout from 'components/Layout'
+import DefaultLayout from 'layouts/DefaultLayout'
 import Image from 'next/image'
 import { classNames } from 'utils'
 import LoginDialog from 'components/LoginDialog'
@@ -9,7 +9,7 @@ const Index: NextPage = () => {
   const [open, setOpen] = useState(false)
 
   return (
-    <Layout metaHead="Sign in">
+    <DefaultLayout metaHead="Sign in">
       <div className="relative bg-white overflow-hidden min-h-screen">
         <div className="max-w-7xl mx-auto">
           <div className="relative bg-white lg:max-w-2xl lg:w-full ">
@@ -53,7 +53,7 @@ const Index: NextPage = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </DefaultLayout>
   )
 }
 
