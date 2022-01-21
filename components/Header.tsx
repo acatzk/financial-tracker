@@ -19,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({ user, navigation, userNavigation }) => 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center">
-                <div className="flex-shrink-0">
+                <div className="flex items-center space-x-3 flex-shrink-0">
                   <Image
                     width={32}
                     height={32}
@@ -27,6 +27,9 @@ const Header: React.FC<HeaderProps> = ({ user, navigation, userNavigation }) => 
                     alt="Workflow"
                     layout="intrinsic"
                   />
+                  <h3 className="block md:hidden text-white py-1 px-2 rounded text-sm">
+                    Balance: <span className="font-semibold">₱3,846</span>
+                  </h3>
                 </div>
                 <div className="hidden md:block">
                   <div className="ml-10 flex items-baseline space-x-4">
@@ -44,6 +47,9 @@ const Header: React.FC<HeaderProps> = ({ user, navigation, userNavigation }) => 
                         {item.name}
                       </a>
                     ))}
+                    <h3 className="text-white text-sm bg-indigo-600 py-1 px-2 rounded shadow">
+                      Balance: <span className="font-semibold">₱3,846</span>
+                    </h3>
                   </div>
                 </div>
               </div>
