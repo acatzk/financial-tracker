@@ -16,8 +16,8 @@ const Dashboard: NextPage = () => {
       <Head>
         <title>Financial Tracker</title>
       </Head>
-      <div className="h-screen flex items-center justify-center bg-[#0F0F0F]">
-        <Loading className="w-10 h-10 text-white" />
+      <div className="h-screen flex items-center justify-center bg-white">
+        <Loading className="w-10 h-10 text-black" />
       </div>
     </React.Fragment>
   )

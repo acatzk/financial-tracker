@@ -1,4 +1,4 @@
 import { classNames } from './classNames'
-import { Loading } from './Icons'
+import { Loading, PlusIcon, MinusIcon } from './Icons'
 
-export { classNames, Loading }
+export { classNames, Loading, PlusIcon, MinusIcon }

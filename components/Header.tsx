@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({ user, navigation, userNavigation }) => 
                     alt="Workflow"
                     layout="intrinsic"
                   />
-                  <h3 className="block md:hidden text-white py-1 px-2 rounded text-sm">
+                  <h3 className="block md:hidden text-white font-medium py-1 px-2 rounded text-sm">
                     Balance: <span className="font-semibold">₱3,846</span>
                   </h3>
                 </div>
