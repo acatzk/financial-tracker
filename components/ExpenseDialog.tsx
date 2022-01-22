@@ -1,6 +1,7 @@
 import React from 'react'
 import Dialogs from './Dialog'
 import { classNames, MinusIcon, PlusIcon } from 'utils'
+import { useForm } from 'react-hook-form'
 
 interface ExpenseProps {
   open: boolean
@@ -10,6 +11,11 @@ interface ExpenseProps {
   handleAddExpenseFields: any
   handleRemoveExpenseFields: Function
   handleChangeInput: Function
+  onSubmit: any
+  totalExpense: any
+  setTotalExpense: any
+  newBalance: any
+  setNewBalance: any
 }
 
 const ExpenseDialog: React.FC<ExpenseProps> = ({
@@ -18,18 +24,29 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
   expenses,
   handleAddExpenseFields,
   handleRemoveExpenseFields,
-  handleChangeInput
+  handleChangeInput,
+  onSubmit,
+  totalExpense,
+  setTotalExpense,
+  newBalance,
+  setNewBalance
 }) => {
+  const {
+    register,
+    formState: { errors, isSubmitting },
+    handleSubmit
+  } = useForm()
+
   return (
     <Dialogs open={open} setOpen={setOpen}>
       <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
         <div className="bg-white pt-6">
           <h2 className="text-center font-semibold text-xl text-gray-700">Add Today's Expenses</h2>
           <div className="mt-5 md:mt-0 md:col-span-2">
-            <form onSubmit={(e) => e.preventDefault()}>
+            <form onSubmit={handleSubmit(onSubmit)}>
               <div className="overflow-hidden sm:rounded-md">
                 <div className="px-4 py-5 bg-white sm:p-6">
-                  <div className="grid grid-rows-2 gap-y-4">
+                  <div className="grid gap-y-4">
                     <div className="col-span-6 sm:col-span-4">
                       <label className="block text-sm font-medium text-gray-700">Balance:</label>
                       <input
@@ -44,8 +61,19 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                       <label className="block text-sm font-medium text-gray-700">Date:</label>
                       <input
                         type="date"
-                        className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                        disabled={isSubmitting}
+                        className={classNames(
+                          'mt-1 block w-full',
+                          'shadow-sm sm:text-sm rounded-md',
+                          errors.date?.type === 'required'
+                            ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500'
+                            : 'ring-indigo-200 focus:ring-indigo-500 border-gray-300'
+                        )}
+                        {...register('date', { required: true })}
                       />
+                      {errors.date?.type === 'required' && (
+                        <span className="text-xs text-red-500 ml-2">Date is required</span>
+                      )}
                     </div>
                     <div className="col-span-6 sm:col-span-4">
                       <label className="block text-sm font-medium text-gray-700">Expenses:</label>
@@ -63,7 +91,7 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                       <input
                         type="text"
                         disabled
-                        autoComplete="email"
+                        value={totalExpense}
                         className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                       />
                     </div>
@@ -74,7 +102,7 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                       <input
                         type="text"
                         disabled
-                        autoComplete="email"
+                        value={newBalance}
                         className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                       />
                     </div>
@@ -107,13 +135,17 @@ const ExpenseForm = ({
       <input
         type="text"
         name="name"
+        required
         placeholder="Name"
         value={expense.name}
         onChange={(event) => handleChangeInput(expense.id, event)}
-        className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        className={classNames(
+          'mt-1 focus:ring-indigo-500 focus:border-indigo-500 block',
+          'w-full shadow-sm sm:text-sm border-gray-300 rounded-md'
+        )}
       />
       <input
-        type="text"
+        type="number"
         name="price"
         placeholder="Price"
         value={expense.price}
@@ -122,6 +154,7 @@ const ExpenseForm = ({
       />
       <div className="mt-1 flex items-center space-x-2">
         <button
+          type="button"
           onClick={() => handleRemoveExpenseFields(expense.id)}
           disabled={expenses.length === 1}
           className={classNames(
@@ -131,6 +164,7 @@ const ExpenseForm = ({
           <MinusIcon className="w-5 h-5 text-gray-600" />
         </button>
         <button
+          type="button"
           onClick={handleAddExpenseFields}
           className="p-2 bg-white rounded border hover:bg-gray-50 active:bg-white transition ease-in-out duration-150">
           <PlusIcon className="w-5 h-5 text-gray-600" />
