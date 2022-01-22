@@ -1,5 +1,5 @@
 import DefaultLayout from 'layouts/DefaultLayout'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Header from 'components/Header'
 import { navigation, user, userNavigation } from 'mock/list'
 import { classNames, PlusIcon } from 'utils'
@@ -8,6 +8,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import ExpenseDialog from 'components/ExpenseDialog'
 import { v4 as uuidv4 } from 'uuid'
+import { useForm } from 'react-hook-form'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -17,8 +18,7 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead }) => {
   const router = useRouter()
 
-  const [openExpense, setOpenExpense] = useState(false)
-  const [date, setDate] = useState(null)
+  const [openExpense, setOpenExpense] = useState(true)
   const [expenses, setExpenses] = useState([
     {
       id: uuidv4(),
@@ -27,12 +27,30 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
     }
   ])
   const [totalExpense, setTotalExpense] = useState(0.0)
-  const [newBalance, setNewBalance] = useState()
+  const [newBalance, setNewBalance] = useState(0.0)
 
+  // UPDATE PARTIAL EXPENSES CALCULATION
+  useEffect(() => {
+    let sumExpense = 0.0
+    let balance = 3846
+    let newBalance = 0.0
+
+    expenses.map(({ price }) => {
+      return (sumExpense += parseFloat(price.toString()))
+    })
+
+    newBalance = balance - sumExpense
+
+    setTotalExpense(sumExpense)
+    setNewBalance(newBalance)
+  })
+
+  // ADD DYNAMIC EXPENSE FIELDS
   const handleAddExpenseFields = () => {
     setExpenses([...expenses, { id: uuidv4(), name: '', price: 0.0 }])
   }
 
+  // REMOVE DYNAMIC EXPENSE FIELDS
   const handleRemoveExpenseFields = (id) => {
     const values = [...expenses]
     values.splice(
@@ -42,6 +60,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
     setExpenses(values)
   }
 
+  // INPUT FIELDS
   const handleChangeInput = (id, event) => {
     const newInputFields = expenses.map((i) => {
       if (id === i.id) {
@@ -49,8 +68,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
       }
       return i
     })
-
     setExpenses(newInputFields)
+  }
+
+  // SUBMIT THE EXPENSES
+  const handleExpenseSubmit = async (expenses, e) => {
+    try {
+      console.log(expenses)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   return (
@@ -67,7 +94,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
                     <a
                       className={classNames(
                         'font-medium pb-6',
-                        'hover:text-gray-800 border-b-2 transition ease-in-out duration-150',
+                        'hover:text-gray-800 border-b-2',
+                        'transition ease-in-out duration-150',
                         router.pathname === `/dashboard/${href}`
                           ? 'text-gray-800  border-gray-500'
                           : 'text-gray-600 border-transparent'
@@ -82,7 +110,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
           <div className="flex items-center space-x-2">
             <button
               className={classNames(
-                'flex items-center space-x-1 bg-green-500 py-2 px-2 rounded text-white font-semibold text-sm',
+                'flex items-center space-x-1 bg-green-500 py-2 px-2',
+                'rounded text-white font-semibold text-sm',
                 'hover:bg-green-600 active:bg-green-500',
                 'transition ease-in-out duration-200'
               )}>
@@ -98,6 +127,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
                 handleAddExpenseFields={handleAddExpenseFields}
                 handleRemoveExpenseFields={handleRemoveExpenseFields}
                 handleChangeInput={handleChangeInput}
+                onSubmit={handleExpenseSubmit}
+                totalExpense={totalExpense}
+                setTotalExpense={setTotalExpense}
+                newBalance={newBalance}
+                setNewBalance={setNewBalance}
               />
               <button
                 onClick={() => setOpenExpense(true)}
