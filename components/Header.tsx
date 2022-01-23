@@ -1,9 +1,12 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { classNames } from 'utils'
 import { Fragment } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import Image from 'next/image'
+import { signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/router'
 
 interface HeaderProps {
   user: any
@@ -12,6 +15,13 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ user, navigation, userNavigation }) => {
+  const router = useRouter()
+  const { data: session } = useSession()
+
+  useEffect(() => {
+    if (!session) router.push('/')
+  }, [session])
+
   return (
     <Disclosure as="nav" className="bg-indigo-800">
       {({ open }) => (
@@ -60,14 +70,25 @@ const Header: React.FC<HeaderProps> = ({ user, navigation, userNavigation }) => 
                     <div>
                       <Menu.Button className="max-w-xs bg-indigo-800 rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-indigo-800 focus:ring-white">
                         <span className="sr-only">Open user menu</span>
-                        <Image
-                          width={32}
-                          height={32}
-                          className="rounded-full"
-                          src={user.imageUrl}
-                          alt=""
-                          layout="intrinsic"
-                        />
+                        {session?.user ? (
+                          <Image
+                            width={32}
+                            height={32}
+                            className="rounded-full"
+                            src={session?.user?.image}
+                            alt=""
+                            layout="intrinsic"
+                          />
+                        ) : (
+                          <Image
+                            width={32}
+                            height={32}
+                            className="rounded-full"
+                            src="https://th.bing.com/th/id/OIP.VU9SCHlocbhk9w84KYbmvgHaEF?w=297&h=180&c=7&r=0&o=5&pid=1.7"
+                            alt=""
+                            layout="intrinsic"
+                          />
+                        )}
                       </Menu.Button>
                     </div>
                     <Transition
@@ -84,6 +105,7 @@ const Header: React.FC<HeaderProps> = ({ user, navigation, userNavigation }) => 
                             {({ active }) => (
                               <a
                                 href={item.href}
+                                onClick={() => item.name === 'Sign out' && signOut()}
                                 className={classNames(
                                   active ? 'bg-gray-100' : '',
                                   'block px-4 py-2 text-sm text-gray-700'
@@ -133,19 +155,32 @@ const Header: React.FC<HeaderProps> = ({ user, navigation, userNavigation }) => 
             <div className="pt-4 pb-3 border-t border-indigo-700">
               <div className="flex items-center px-5">
                 <div className="flex-shrink-0">
-                  <Image
-                    width={40}
-                    height={40}
-                    className="rounded-full"
-                    src={user.imageUrl}
-                    alt=""
-                    layout="intrinsic"
-                  />
+                  {session?.user ? (
+                    <Image
+                      width={32}
+                      height={32}
+                      className="rounded-full"
+                      src={session?.user?.image}
+                      alt=""
+                      layout="intrinsic"
+                    />
+                  ) : (
+                    <Image
+                      width={32}
+                      height={32}
+                      className="rounded-full"
+                      src="https://th.bing.com/th/id/OIP.VU9SCHlocbhk9w84KYbmvgHaEF?w=297&h=180&c=7&r=0&o=5&pid=1.7"
+                      alt=""
+                      layout="intrinsic"
+                    />
+                  )}
                 </div>
                 <div className="ml-3">
-                  <div className="text-base font-medium leading-none text-white">{user.name}</div>
+                  <div className="text-base font-medium leading-none text-white">
+                    {session?.user?.name}
+                  </div>
                   <div className="text-sm font-medium leading-none text-indigo-400">
-                    {user.email}
+                    {session?.user?.email}
                   </div>
                 </div>
               </div>
@@ -155,6 +190,7 @@ const Header: React.FC<HeaderProps> = ({ user, navigation, userNavigation }) => 
                     key={item.name}
                     as="a"
                     href={item.href}
+                    onClick={() => item.name === 'Sign out' && signOut()}
                     className="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-indigo-700">
                     {item.name}
                   </Disclosure.Button>
