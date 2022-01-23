@@ -6,7 +6,9 @@ module.exports = {
       'tailwindui.com',
       'images.unsplash.com',
       'media.istockphoto.com',
-      'avatars.githubusercontent.com'
+      'avatars.githubusercontent.com',
+      'th.bing.com',
+      'lh3.googleusercontent.com'
     ]
   }
 }

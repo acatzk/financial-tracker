@@ -8,7 +8,6 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import ExpenseDialog from 'components/ExpenseDialog'
 import { v4 as uuidv4 } from 'uuid'
-import { useForm } from 'react-hook-form'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -18,7 +17,7 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead }) => {
   const router = useRouter()
 
-  const [openExpense, setOpenExpense] = useState(true)
+  const [openExpense, setOpenExpense] = useState(false)
   const [expenses, setExpenses] = useState([
     {
       id: uuidv4(),
