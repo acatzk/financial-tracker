@@ -4,9 +4,8 @@ import { Fragment } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import Image from 'next/image'
-import { signOut } from 'next-auth/react'
+import { getSession, signOut } from 'next-auth/react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/router'
 
 interface HeaderProps {
   user: any
@@ -14,13 +13,8 @@ interface HeaderProps {
   userNavigation: any
 }
 
-const Header: React.FC<HeaderProps> = ({ user, navigation, userNavigation }) => {
-  const router = useRouter()
+const Header: React.FC<HeaderProps> = ({ navigation, userNavigation }) => {
   const { data: session } = useSession()
-
-  useEffect(() => {
-    if (!session) router.push('/')
-  }, [session])
 
   return (
     <Disclosure as="nav" className="bg-indigo-800">
@@ -70,25 +64,7 @@ const Header: React.FC<HeaderProps> = ({ user, navigation, userNavigation }) => 
                     <div>
                       <Menu.Button className="max-w-xs bg-indigo-800 rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-indigo-800 focus:ring-white">
                         <span className="sr-only">Open user menu</span>
-                        {session?.user ? (
-                          <Image
-                            width={32}
-                            height={32}
-                            className="rounded-full"
-                            src={session?.user?.image}
-                            alt=""
-                            layout="intrinsic"
-                          />
-                        ) : (
-                          <Image
-                            width={32}
-                            height={32}
-                            className="rounded-full"
-                            src="https://th.bing.com/th/id/OIP.VU9SCHlocbhk9w84KYbmvgHaEF?w=297&h=180&c=7&r=0&o=5&pid=1.7"
-                            alt=""
-                            layout="intrinsic"
-                          />
-                        )}
+                        <UserAvatar user={session?.user} />
                       </Menu.Button>
                     </div>
                     <Transition
@@ -155,25 +131,7 @@ const Header: React.FC<HeaderProps> = ({ user, navigation, userNavigation }) => 
             <div className="pt-4 pb-3 border-t border-indigo-700">
               <div className="flex items-center px-5">
                 <div className="flex-shrink-0">
-                  {session?.user ? (
-                    <Image
-                      width={32}
-                      height={32}
-                      className="rounded-full"
-                      src={session?.user?.image}
-                      alt=""
-                      layout="intrinsic"
-                    />
-                  ) : (
-                    <Image
-                      width={32}
-                      height={32}
-                      className="rounded-full"
-                      src="https://th.bing.com/th/id/OIP.VU9SCHlocbhk9w84KYbmvgHaEF?w=297&h=180&c=7&r=0&o=5&pid=1.7"
-                      alt=""
-                      layout="intrinsic"
-                    />
-                  )}
+                  <UserAvatar user={session?.user} />
                 </div>
                 <div className="ml-3">
                   <div className="text-base font-medium leading-none text-white">
@@ -201,6 +159,24 @@ const Header: React.FC<HeaderProps> = ({ user, navigation, userNavigation }) => 
         </>
       )}
     </Disclosure>
+  )
+}
+
+function UserAvatar({ user }) {
+  return (
+    <Image
+      src={
+        user
+          ? user?.image
+          : 'https://th.bing.com/th/id/OIP.VU9SCHlocbhk9w84KYbmvgHaEF?w=297&h=180&c=7&r=0&o=5&pid=1.7'
+      }
+      width={32}
+      height={32}
+      className="rounded-full"
+      layout="intrinsic"
+      quality={75}
+      alt=""
+    />
   )
 }
 
