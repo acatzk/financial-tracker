@@ -3,13 +3,19 @@ import { useRouter } from 'next/router'
 import React, { useEffect } from 'react'
 import { Loading } from 'utils'
 import Head from 'next/head'
+import { useSession } from 'next-auth/react'
 
 const Dashboard: NextPage = () => {
   const router = useRouter()
+  const session = useSession()
 
   useEffect(() => {
-    router.pathname === '/dashboard' ? router.push('/dashboard/overview') : ''
-  }, [])
+    if (session) {
+      router.push('/dashboard/overview')
+    } else {
+      router.push('/')
+    }
+  }, [session])
 
   return (
     <React.Fragment>

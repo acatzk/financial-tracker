@@ -8,6 +8,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import ExpenseDialog from 'components/ExpenseDialog'
 import { v4 as uuidv4 } from 'uuid'
+import { getSession, useSession } from 'next-auth/react'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -16,6 +17,7 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead }) => {
   const router = useRouter()
+  const { data: session } = useSession()
 
   const [openExpense, setOpenExpense] = useState(false)
   const [expenses, setExpenses] = useState([
@@ -79,22 +81,27 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
     }
   }
 
+  useEffect(() => {
+    if (!session) router.push('/')
+  }, [session])
+
   return (
     <DefaultLayout metaHead={metaHead}>
       <Header user={user} navigation={navigation} userNavigation={userNavigation} />
 
       <header className="bg-white shadow">
-        <div className="flex items-center justify-between max-w-7xl mx-auto py-4 px-4 sm:px-4 lg:px-8">
+        <div className="flex items-center justify-between max-w-7xl mx-auto py-2 px-2 md:px-4 md:py-4 lg:px-8">
           <nav>
-            <ul className="flex items-center space-x-6">
+            <ul className="flex items-center space-x-4 md:space-x-6">
               {dashboardLink.map(({ name, href }, i) => (
                 <li key={i}>
                   <Link href={`/dashboard/${href}`}>
                     <a
                       className={classNames(
-                        'font-medium pb-6',
+                        'font-medium pb-4 md:pb-6',
                         'hover:text-gray-800 border-b-2',
                         'transition ease-in-out duration-150',
+                        'text-sm md:text-base',
                         router.pathname === `/dashboard/${href}`
                           ? 'text-gray-800  border-gray-500'
                           : 'text-gray-600 border-transparent'
@@ -115,7 +122,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
                 'transition ease-in-out duration-200'
               )}>
               <PlusIcon className="w-5 h-5" />
-              <span>Income</span>
+              <span className="hidden md:block">Income</span>
             </button>
             <div>
               <ExpenseDialog
@@ -140,7 +147,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
                   'transition ease-in-out duration-200'
                 )}>
                 <PlusIcon className="w-5 h-5" />
-                <span>Expense</span>
+                <span className="hidden md:block">Expense</span>
               </button>
             </div>
           </div>
