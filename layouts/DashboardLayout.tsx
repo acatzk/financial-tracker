@@ -17,7 +17,8 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead }) => {
   const router = useRouter()
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+  const loading = status === 'loading'
 
   const [openExpense, setOpenExpense] = useState(false)
   const [expenses, setExpenses] = useState([
@@ -84,6 +85,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
   useEffect(() => {
     if (!session) router.push('/')
   }, [session])
+
+  // When rendering client side don't display anything until loading is complete
+  if (typeof window !== 'undefined' && loading) return null
 
   return (
     <DefaultLayout metaHead={metaHead}>

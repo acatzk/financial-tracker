@@ -7,7 +7,8 @@ import { useSession } from 'next-auth/react'
 
 const Dashboard: NextPage = () => {
   const router = useRouter()
-  const session = useSession()
+  const { data: session, status } = useSession()
+  const loading = status === 'loading'
 
   useEffect(() => {
     if (session) {
@@ -16,6 +17,9 @@ const Dashboard: NextPage = () => {
       router.push('/')
     }
   }, [session])
+
+  // When rendering client side don't display anything until loading is complete
+  if (typeof window !== 'undefined' && loading) return null
 
   return (
     <React.Fragment>

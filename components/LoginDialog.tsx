@@ -1,5 +1,3 @@
-import { motion } from 'framer-motion'
-import { fadeInUp, stagger } from 'mock/animation'
 import { IconType } from 'react-icons'
 import { classNames } from 'utils'
 import Dialogs from './Dialog'
@@ -24,50 +22,11 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, setOpen }) => {
             Sign in with
           </h3>
           <div className="mt-2">
-            <motion.div variants={stagger} className="flex flex-col space-y-1 w-full">
-              <motion.button
-                variants={fadeInUp}
-                className={classNames(
-                  'group flex items-center justify-center space-x-2 py-3 px-4 rounded',
-                  'hover:bg-opacity-80 transition ease-in-out duration-200',
-                  'focus:outline-none border border-transparent',
-                  'active:bg-transparent active:border-black dark:active:border-white bg-[#4267B2]'
-                )}
-                onClick={() => signIn('facebook')}>
-                <FaFacebook className="w-5 h-5 text-white group-active:text-black dark:group-active:text-white" />
-                <span className="font-medium text-white group-active:text-black dark:group-active:text-white">
-                  Continue with Facebook
-                </span>
-              </motion.button>
-              <motion.button
-                variants={fadeInUp}
-                className={classNames(
-                  'group flex items-center justify-center space-x-2 py-3 px-4 rounded',
-                  'hover:bg-opacity-80 transition ease-in-out duration-200',
-                  'focus:outline-none border border-transparent',
-                  'active:bg-transparent active:border-black dark:active:border-white bg-[#db3236]'
-                )}
-                onClick={() => signIn('google')}>
-                <FaGoogle className="w-5 h-5 text-white group-active:text-black dark:group-active:text-white" />
-                <span className="font-medium text-white group-active:text-black dark:group-active:text-white">
-                  Continue with Google
-                </span>
-              </motion.button>
-              <motion.button
-                variants={fadeInUp}
-                className={classNames(
-                  'group flex items-center justify-center space-x-2 py-3 px-4 rounded',
-                  'hover:bg-opacity-80 transition ease-in-out duration-200',
-                  'focus:outline-none border border-transparent',
-                  'active:bg-transparent active:border-black dark:active:border-white bg-[#24292e]'
-                )}
-                onClick={() => signIn('github')}>
-                <FaGithub className="w-5 h-5 text-white group-active:text-black dark:group-active:text-white" />
-                <span className="font-medium text-white group-active:text-black dark:group-active:text-white">
-                  Continue with GitHub
-                </span>
-              </motion.button>
-            </motion.div>
+            <div className="flex flex-col space-y-1 w-full">
+              <LoginButton Icon={FaFacebook} title="facebook" className="bg-[#4267B2]" />
+              <LoginButton Icon={FaGoogle} title="google" className="bg-[#db3236]" />
+              <LoginButton Icon={FaGithub} title="github" className="bg-[#24292e]" />
+            </div>
           </div>
         </div>
       </div>
@@ -81,9 +40,9 @@ const LoginButton: React.FC<{
   className?: string
 }> = ({ Icon, title, className }) => {
   return (
-    <motion.button
+    <button
       type="button"
-      variants={fadeInUp}
+      onClick={() => signIn(title)}
       className={classNames(
         'group flex items-center justify-center space-x-2 py-3 px-4 rounded',
         'hover:bg-opacity-80 transition ease-in-out duration-200',
@@ -95,7 +54,7 @@ const LoginButton: React.FC<{
       <span className="font-medium text-white group-active:text-black dark:group-active:text-white capitalize">
         Continue with {title}
       </span>
-    </motion.button>
+    </button>
   )
 }
 

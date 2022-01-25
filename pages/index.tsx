@@ -9,12 +9,16 @@ import { useSession } from 'next-auth/react'
 
 const Index: NextPage = () => {
   const router = useRouter()
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+  const loading = status === 'loading'
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
     if (session) router.push('/dashboard')
   }, [session])
+
+  // When rendering client side don't display anything until loading is complete
+  if (typeof window !== 'undefined' && loading) return null
 
   return (
     <DefaultLayout metaHead="Sign in">
