@@ -60,7 +60,7 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, onSubmit }) => {
                         )}
                         {...register('amount', { required: true })}
                       />
-                      {errors.date?.type === 'required' && (
+                      {errors.amount?.type === 'required' && (
                         <span className="text-xs text-red-500 ml-2">Amount is required</span>
                       )}
                     </div>
