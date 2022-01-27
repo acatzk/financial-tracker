@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { classNames } from 'utils'
 import { Fragment } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
@@ -6,15 +6,55 @@ import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import Image from 'next/image'
 import { signOut } from 'next-auth/react'
 import { useSession } from 'next-auth/react'
+import { GetStaticProps } from 'next'
+import { hasuraAdminClient } from 'lib/hasura-admin-client'
+import { GET_ALL_INCOME_BY_USER_ID_QUERY } from 'graphql/queries'
+import useSWR from 'swr'
 
 interface HeaderProps {
   user: any
   navigation: any
   userNavigation: any
+  initialIncome?: any
+}
+
+export const getStaticProps: GetStaticProps = async () => {
+  const { data: session } = useSession()
+
+  const initialIncome = await hasuraAdminClient.request(GET_ALL_INCOME_BY_USER_ID_QUERY, {
+    user_id: session?.id
+  })
+
+  return {
+    props: {
+      initialIncome
+    },
+    revalidate: 1
+  }
 }
 
 const Header: React.FC<HeaderProps> = ({ navigation, userNavigation }) => {
   const { data: session } = useSession()
+  const [balance, setBalance] = useState(0.0)
+  const user_id = session?.id
+
+  const { data } = useSWR(
+    [GET_ALL_INCOME_BY_USER_ID_QUERY, user_id],
+    (query, user_id) => hasuraAdminClient.request(query, { user_id }),
+    { revalidateOnMount: true }
+  )
+
+  useEffect(() => {
+    getUpdateBalance()
+  })
+
+  function getUpdateBalance() {
+    let total = 0.0
+    data?.income.map(({ amount }) => {
+      total += amount
+    })
+    setBalance(total)
+  }
 
   return (
     <Disclosure as="nav" className="bg-indigo-800">
@@ -32,7 +72,7 @@ const Header: React.FC<HeaderProps> = ({ navigation, userNavigation }) => {
                     layout="intrinsic"
                   />
                   <h3 className="block md:hidden text-white font-medium py-1 px-2 rounded text-sm">
-                    Balance: <span className="font-semibold">₱3,846</span>
+                    Balance: <span className="font-semibold">₱{balance}</span>
                   </h3>
                 </div>
                 <div className="hidden md:block">
@@ -52,7 +92,7 @@ const Header: React.FC<HeaderProps> = ({ navigation, userNavigation }) => {
                       </a>
                     ))}
                     <h3 className="text-white text-sm bg-indigo-600 py-1 px-2 rounded shadow">
-                      Balance: <span className="font-semibold">₱3,846</span>
+                      Balance: <span className="font-semibold">₱{balance}</span>
                     </h3>
                   </div>
                 </div>
