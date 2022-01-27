@@ -13,6 +13,7 @@ import IncomeDialog from 'components/IncomeDialog'
 import { toast } from 'react-toastify'
 import { CREATE_INCOME_MUTATION } from 'graphql/mutations'
 import { hasuraAdminClient } from 'lib/hasura-admin-client'
+import { GET_ALL_INCOME_BY_USER_ID_QUERY } from 'graphql/queries'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -26,7 +27,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
 
   const [openIncome, setOpenIncome] = useState(false)
   const [openExpense, setOpenExpense] = useState(false)
-
   const [expenses, setExpenses] = useState([
     {
       id: uuidv4(),
@@ -120,7 +120,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
           amount: parseFloat(amount.toString())
         })
 
-        toast.success('Successfully Add Income!')
+        toast.success(`Added ₱${amount} ${income} Income!`)
         e.target.reset()
         setOpenIncome(false)
       }
@@ -143,28 +143,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
 
       <header className="bg-white shadow">
         <div className="flex items-center justify-between max-w-7xl mx-auto py-2 px-2 md:px-4 md:py-4 lg:px-8">
-          <nav>
-            <ul className="flex items-center space-x-4 md:space-x-6">
-              {dashboardLink.map(({ name, href }, i) => (
-                <li key={i}>
-                  <Link href={`/dashboard/${href}`}>
-                    <a
-                      className={classNames(
-                        'font-medium pb-4 md:pb-6',
-                        'hover:text-gray-800 border-b-2',
-                        'transition ease-in-out duration-150',
-                        'text-sm md:text-base',
-                        router.pathname === `/dashboard/${href}`
-                          ? 'text-gray-800  border-gray-500'
-                          : 'text-gray-600 border-transparent'
-                      )}>
-                      {name}
-                    </a>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <DashboardSubLinks dashboardLink={dashboardLink} />
           <div className="flex items-center space-x-2">
             <div>
               <IncomeDialog
@@ -213,6 +192,34 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
       </header>
       {children}
     </DefaultLayout>
+  )
+}
+
+function DashboardSubLinks({ dashboardLink }) {
+  const router = useRouter()
+  return (
+    <nav>
+      <ul className="flex items-center space-x-4 md:space-x-6">
+        {dashboardLink.map(({ name, href }, i) => (
+          <li key={i}>
+            <Link href={`/dashboard/${href}`}>
+              <a
+                className={classNames(
+                  'font-medium pb-4 md:pb-6',
+                  'hover:text-gray-800 border-b-2',
+                  'transition ease-in-out duration-150',
+                  'text-sm md:text-base',
+                  router.pathname === `/dashboard/${href}`
+                    ? 'text-gray-800  border-gray-500'
+                    : 'text-gray-600 border-transparent'
+                )}>
+                {name}
+              </a>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
   )
 }
 
