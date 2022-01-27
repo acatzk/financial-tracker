@@ -8,8 +8,9 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import ExpenseDialog from 'components/ExpenseDialog'
 import { v4 as uuidv4 } from 'uuid'
-import { getSession, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import IncomeDialog from 'components/IncomeDialog'
+import { toast } from 'react-toastify'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -52,15 +53,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
 
   useEffect(() => {
     if (newBalance < 0) {
-      return alert('Insufficient Income to cover the expense')
+      toast.error('Insufficient Income to cover the expense', {
+        position: toast.POSITION.TOP_CENTER
+      }) // alert('Insufficient Income to cover the expense')
     }
 
     expenses.map(({ price }) => {
       if (parseFloat(price.toString()) < 0) {
-        return alert('Invalid expense cost!')
+        toast.error('Invalid expense cost!', {
+          position: toast.POSITION.TOP_CENTER
+        })
       }
     })
-  }, [newBalance, expenses])
+  }, [newBalance])
 
   // ADD DYNAMIC EXPENSE FIELDS
   const handleAddExpenseFields = () => {
@@ -101,7 +106,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
   const handleIncomeSubmit = async ({ income, amount }) => {
     try {
       if (amount < 0) {
-        return alert('Invalid amount!')
+        toast.error('Invalid amount!', {
+          position: toast.POSITION.TOP_CENTER
+        })
       }
       console.log({ income, amount })
     } catch (err) {

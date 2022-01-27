@@ -21,6 +21,7 @@
     "react-hook-form": "^7.24.2",
     "react-icons": "^4.2.0",
     "react-smooth-scrollbar": "^8.0.6",
+    "react-toastify": "^8.1.0",
     "smooth-scrollbar": "^8.6.3",
     "tailwindcss-scrollbar": "^0.1.0",
     "uuid": "^8.3.2"
