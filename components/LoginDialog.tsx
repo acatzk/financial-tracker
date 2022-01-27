@@ -21,12 +21,10 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, setOpen }) => {
           <h3 className="text-lg leading-6 font-semibold text-gray-800 text-center">
             Sign in with
           </h3>
-          <div className="mt-2">
-            <div className="flex flex-col space-y-1 w-full">
-              <LoginButton Icon={FaFacebook} title="facebook" className="bg-[#4267B2]" />
-              <LoginButton Icon={FaGoogle} title="google" className="bg-[#db3236]" />
-              <LoginButton Icon={FaGithub} title="github" className="bg-[#24292e]" />
-            </div>
+          <div className="mt-2 flex flex-col space-y-1 w-full">
+            <LoginButton Icon={FaFacebook} title="facebook" className="bg-[#4267B2]" />
+            <LoginButton Icon={FaGoogle} title="google" className="bg-[#db3236]" />
+            <LoginButton Icon={FaGithub} title="github" className="bg-[#24292e]" />
           </div>
         </div>
       </div>

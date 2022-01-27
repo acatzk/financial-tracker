@@ -13,9 +13,7 @@ interface ExpenseProps {
   handleChangeInput: Function
   onSubmit: any
   totalExpense: any
-  setTotalExpense: any
   newBalance: any
-  setNewBalance: any
 }
 
 const ExpenseDialog: React.FC<ExpenseProps> = ({
@@ -27,9 +25,7 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
   handleChangeInput,
   onSubmit,
   totalExpense,
-  setTotalExpense,
-  newBalance,
-  setNewBalance
+  newBalance
 }) => {
   const {
     register,
@@ -48,7 +44,9 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                 <div className="px-4 py-5 bg-white sm:p-6">
                   <div className="grid gap-y-4">
                     <div className="col-span-6 sm:col-span-4">
-                      <label className="block text-sm font-medium text-gray-700">Balance:</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Current Balance:
+                      </label>
                       <input
                         type="text"
                         disabled
@@ -91,7 +89,7 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                       <input
                         type="text"
                         disabled
-                        value={totalExpense}
+                        value={`₱${totalExpense}`}
                         className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                       />
                     </div>
@@ -102,7 +100,7 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                       <input
                         type="text"
                         disabled
-                        value={newBalance}
+                        value={`₱${newBalance}`}
                         className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                       />
                     </div>

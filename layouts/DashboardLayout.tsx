@@ -9,6 +9,7 @@ import Link from 'next/link'
 import ExpenseDialog from 'components/ExpenseDialog'
 import { v4 as uuidv4 } from 'uuid'
 import { getSession, useSession } from 'next-auth/react'
+import IncomeDialog from 'components/IncomeDialog'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -20,7 +21,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
   const { data: session, status } = useSession()
   const loading = status === 'loading'
 
+  const [openIncome, setOpenIncome] = useState(false)
   const [openExpense, setOpenExpense] = useState(false)
+
   const [expenses, setExpenses] = useState([
     {
       id: uuidv4(),
@@ -47,6 +50,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
     setNewBalance(newBalance)
   })
 
+  useEffect(() => {
+    if (newBalance < 0) {
+      return alert('Insufficient Income to cover the expense')
+    }
+
+    expenses.map(({ price }) => {
+      if (parseFloat(price.toString()) < 0) {
+        return alert('Invalid expense cost!')
+      }
+    })
+  }, [newBalance, expenses])
+
   // ADD DYNAMIC EXPENSE FIELDS
   const handleAddExpenseFields = () => {
     setExpenses([...expenses, { id: uuidv4(), name: '', price: 0.0 }])
@@ -70,18 +85,31 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
       }
       return i
     })
+
     setExpenses(newInputFields)
   }
 
   // SUBMIT THE EXPENSES
   const handleExpenseSubmit = async (expenses, e) => {
     try {
-      console.log(expenses)
+      alert(expenses)
     } catch (err) {
-      console.error(err)
+      alert(err)
     }
   }
 
+  const handleIncomeSubmit = async ({ income, amount }) => {
+    try {
+      if (amount < 0) {
+        return alert('Invalid amount!')
+      }
+      console.log({ income, amount })
+    } catch (err) {
+      alert(err)
+    }
+  }
+
+  // THIS WILL CHECK OF USER IS AUTHENTICATED
   useEffect(() => {
     if (!session) router.push('/')
   }, [session])
@@ -118,16 +146,24 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
             </ul>
           </nav>
           <div className="flex items-center space-x-2">
-            <button
-              className={classNames(
-                'flex items-center space-x-1 bg-green-500 py-2 px-2',
-                'rounded text-white font-semibold text-sm',
-                'hover:bg-green-600 active:bg-green-500',
-                'transition ease-in-out duration-200'
-              )}>
-              <PlusIcon className="w-5 h-5" />
-              <span className="hidden md:block">Income</span>
-            </button>
+            <div>
+              <IncomeDialog
+                open={openIncome}
+                setOpen={setOpenIncome}
+                onSubmit={handleIncomeSubmit}
+              />
+              <button
+                onClick={() => setOpenIncome(true)}
+                className={classNames(
+                  'flex items-center space-x-1 bg-green-500 py-2 px-2',
+                  'rounded text-white font-semibold text-sm',
+                  'hover:bg-green-600 active:bg-green-500',
+                  'transition ease-in-out duration-200'
+                )}>
+                <PlusIcon className="w-5 h-5" />
+                <span className="hidden md:block">Income</span>
+              </button>
+            </div>
             <div>
               <ExpenseDialog
                 open={openExpense}
@@ -139,9 +175,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
                 handleChangeInput={handleChangeInput}
                 onSubmit={handleExpenseSubmit}
                 totalExpense={totalExpense}
-                setTotalExpense={setTotalExpense}
                 newBalance={newBalance}
-                setNewBalance={setNewBalance}
               />
               <button
                 onClick={() => setOpenExpense(true)}
