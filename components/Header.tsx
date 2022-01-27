@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { classNames } from 'utils'
 import { Fragment } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import Image from 'next/image'
-import { getSession, signOut } from 'next-auth/react'
+import { signOut } from 'next-auth/react'
 import { useSession } from 'next-auth/react'
 
 interface HeaderProps {

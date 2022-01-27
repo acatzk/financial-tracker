@@ -1,6 +1,6 @@
 import React from 'react'
 import Dialogs from './Dialog'
-import { classNames, MinusIcon, PlusIcon } from 'utils'
+import { classNames, Spinner } from 'utils'
 import { useForm } from 'react-hook-form'
 
 interface ExpenseProps {
@@ -32,10 +32,11 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, onSubmit }) => {
                       </label>
                       <input
                         type="text"
+                        disabled={isSubmitting}
                         placeholder="Example: Job, wages, tip, gift, donation etc."
                         className={classNames(
                           'mt-1 block w-full',
-                          'shadow-sm sm:text-sm rounded-md',
+                          'shadow-sm sm:text-sm rounded-md disabled:opacity-50 disabled:cursor-not-allowed',
                           errors.income?.type === 'required'
                             ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500'
                             : 'ring-indigo-200 focus:ring-indigo-500 border-gray-300'
@@ -50,10 +51,11 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, onSubmit }) => {
                       <label className="block text-sm font-medium text-gray-700">Amount:</label>
                       <input
                         type="number"
+                        disabled={isSubmitting}
                         placeholder="Philippine Peso"
                         className={classNames(
                           'mt-1 block w-full',
-                          'shadow-sm sm:text-sm rounded-md',
+                          'shadow-sm sm:text-sm rounded-md disabled:opacity-50 disabled:cursor-not-allowed',
                           errors.amount?.type === 'required'
                             ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500'
                             : 'ring-indigo-200 focus:ring-indigo-500 border-gray-300'
@@ -69,8 +71,14 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, onSubmit }) => {
                 <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
                   <button
                     type="submit"
-                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Save
+                    disabled={isSubmitting}
+                    className={classNames(
+                      'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm',
+                      'font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700',
+                      'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500',
+                      'disabled:opacity-50 disabled:cursor-not-allowed'
+                    )}>
+                    {isSubmitting ? <Spinner className="w-5 h-5 text-white" /> : 'Save'}
                   </button>
                 </div>
               </div>

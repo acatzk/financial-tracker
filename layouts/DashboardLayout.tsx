@@ -11,6 +11,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { useSession } from 'next-auth/react'
 import IncomeDialog from 'components/IncomeDialog'
 import { toast } from 'react-toastify'
+import { CREATE_INCOME_MUTATION } from 'graphql/mutations'
+import { hasuraAdminClient } from 'lib/hasura-admin-client'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -35,7 +37,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
   const [totalExpense, setTotalExpense] = useState(0.0)
   const [newBalance, setNewBalance] = useState(0.0)
 
-  // UPDATE PARTIAL EXPENSES CALCULATION
+  // This will auto update the new balance and expenses
   useEffect(() => {
     let sumExpense = 0.0
     let balance = 3846
@@ -51,6 +53,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
     setNewBalance(newBalance)
   })
 
+  // This will check if the expenses insufficient or invalid
   useEffect(() => {
     if (newBalance < 0) {
       toast.error('Insufficient Income to cover the expense', {
@@ -67,12 +70,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
     })
   }, [newBalance])
 
-  // ADD DYNAMIC EXPENSE FIELDS
+  // Add dynamic expenses field
   const handleAddExpenseFields = () => {
     setExpenses([...expenses, { id: uuidv4(), name: '', price: 0.0 }])
   }
 
-  // REMOVE DYNAMIC EXPENSE FIELDS
+  // Remove the dynamic expenses field
   const handleRemoveExpenseFields = (id) => {
     const values = [...expenses]
     values.splice(
@@ -82,7 +85,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
     setExpenses(values)
   }
 
-  // INPUT FIELDS
+  // Input handling input changes from states
   const handleChangeInput = (id, event) => {
     const newInputFields = expenses.map((i) => {
       if (id === i.id) {
@@ -94,7 +97,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
     setExpenses(newInputFields)
   }
 
-  // SUBMIT THE EXPENSES
+  // This will handle submission in expenses inputted
   const handleExpenseSubmit = async (expenses, e) => {
     try {
       alert(expenses)
@@ -103,20 +106,30 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
     }
   }
 
-  const handleIncomeSubmit = async ({ income, amount }) => {
+  // This will submit the inputed income
+  const handleIncomeSubmit = async ({ income, amount }, e) => {
     try {
       if (amount < 0) {
         toast.error('Invalid amount!', {
           position: toast.POSITION.TOP_CENTER
         })
+      } else {
+        await hasuraAdminClient.request(CREATE_INCOME_MUTATION, {
+          user_id: session?.id,
+          income_from: income,
+          amount: parseFloat(amount.toString())
+        })
+
+        toast.success('Successfully Add Income!')
+        e.target.reset()
+        setOpenIncome(false)
       }
-      console.log({ income, amount })
     } catch (err) {
-      alert(err)
+      console.log(err)
     }
   }
 
-  // THIS WILL CHECK OF USER IS AUTHENTICATED
+  // This will check if user is authenticated
   useEffect(() => {
     if (!session) router.push('/')
   }, [session])
