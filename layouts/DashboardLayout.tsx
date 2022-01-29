@@ -13,7 +13,6 @@ import IncomeDialog from 'components/IncomeDialog'
 import { toast } from 'react-toastify'
 import { CREATE_INCOME_MUTATION } from 'graphql/mutations'
 import { hasuraAdminClient } from 'lib/hasura-admin-client'
-import { GET_ALL_INCOME_BY_USER_ID_QUERY } from 'graphql/queries'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -107,7 +106,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
   }
 
   // This will submit the inputed income
-  const handleIncomeSubmit = async ({ income, amount }, e) => {
+  const handleIncomeSubmit = async ({ income, amount, date_earned }, e) => {
     try {
       if (amount < 0) {
         toast.error('Invalid amount!', {
@@ -117,10 +116,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
         await hasuraAdminClient.request(CREATE_INCOME_MUTATION, {
           user_id: session?.id,
           income_from: income,
-          amount: parseFloat(amount.toString())
+          amount: parseFloat(amount.toString()),
+          date_earned
         })
 
-        toast.success(`Added ₱${amount} ${income} Income!`)
+        toast.success(`Added ₱${amount} ${income.trim().replace(/^\w/, (c) => c.toUpperCase())}!`)
         e.target.reset()
         setOpenIncome(false)
       }
