@@ -28,6 +28,27 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, onSubmit }) => {
                   <div className="grid gap-y-4">
                     <div className="col-span-6">
                       <label className="block text-sm font-medium text-gray-700">
+                        Date Earned:
+                      </label>
+                      <input
+                        type="date"
+                        disabled={isSubmitting}
+                        value={new Date().toISOString().slice(0, 10)}
+                        className={classNames(
+                          'mt-1 block w-full',
+                          'shadow-sm sm:text-sm rounded-md disabled:opacity-50 disabled:cursor-not-allowed',
+                          errors.date_earned?.type === 'required'
+                            ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500'
+                            : 'ring-indigo-200 focus:ring-indigo-500 border-gray-300'
+                        )}
+                        {...register('date_earned', { required: true })}
+                      />
+                      {errors.date_earned?.type === 'required' && (
+                        <span className="text-xs text-red-500 ml-2">Date Earned is required</span>
+                      )}
+                    </div>
+                    <div className="col-span-6">
+                      <label className="block text-sm font-medium text-gray-700">
                         Income from:
                       </label>
                       <input

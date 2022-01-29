@@ -38,13 +38,14 @@ const Header: React.FC<HeaderProps> = ({ navigation, userNavigation }) => {
   const [balance, setBalance] = useState(0.0)
   const user_id = session?.id
 
-  const { data } = useSWR(
+  const { data, mutate } = useSWR(
     [GET_ALL_INCOME_BY_USER_ID_QUERY, user_id],
     (query, user_id) => hasuraAdminClient.request(query, { user_id }),
     { revalidateOnMount: true }
   )
 
   useEffect(() => {
+    mutate()
     getUpdateBalance()
   })
 
