@@ -54,7 +54,7 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, onSubmit }) => {
                       <input
                         type="text"
                         disabled={isSubmitting}
-                        placeholder="Example: Job, wages, tip, gift, donation etc."
+                        placeholder="Example: Work/Job, wages, tip, gift, donation etc."
                         className={classNames(
                           'mt-1 block w-full',
                           'shadow-sm sm:text-sm rounded-md disabled:opacity-50 disabled:cursor-not-allowed',

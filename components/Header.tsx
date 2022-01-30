@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { classNames } from 'utils'
 import { Fragment } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
@@ -6,56 +6,17 @@ import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import Image from 'next/image'
 import { signOut } from 'next-auth/react'
 import { useSession } from 'next-auth/react'
-import { GetStaticProps } from 'next'
-import { hasuraAdminClient } from 'lib/hasura-admin-client'
-import { GET_ALL_INCOME_BY_USER_ID_QUERY } from 'graphql/queries'
-import useSWR from 'swr'
 
 interface HeaderProps {
   user: any
   navigation: any
   userNavigation: any
   initialIncome?: any
+  balance: number
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+const Header: React.FC<HeaderProps> = ({ navigation, userNavigation, balance }) => {
   const { data: session } = useSession()
-
-  const initialIncome = await hasuraAdminClient.request(GET_ALL_INCOME_BY_USER_ID_QUERY, {
-    user_id: session?.id
-  })
-
-  return {
-    props: {
-      initialIncome
-    },
-    revalidate: 1
-  }
-}
-
-const Header: React.FC<HeaderProps> = ({ navigation, userNavigation }) => {
-  const { data: session } = useSession()
-  const [balance, setBalance] = useState(0.0)
-  const user_id = session?.id
-
-  const { data, mutate } = useSWR(
-    [GET_ALL_INCOME_BY_USER_ID_QUERY, user_id],
-    (query, user_id) => hasuraAdminClient.request(query, { user_id }),
-    { revalidateOnMount: true }
-  )
-
-  useEffect(() => {
-    mutate()
-    getUpdateBalance()
-  })
-
-  function getUpdateBalance() {
-    let total = 0.0
-    data?.income.map(({ amount }) => {
-      total += amount
-    })
-    setBalance(total)
-  }
 
   return (
     <Disclosure as="nav" className="bg-indigo-800">

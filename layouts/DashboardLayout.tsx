@@ -13,6 +13,8 @@ import IncomeDialog from 'components/IncomeDialog'
 import { toast } from 'react-toastify'
 import { CREATE_INCOME_MUTATION } from 'graphql/mutations'
 import { hasuraAdminClient } from 'lib/hasura-admin-client'
+import { GET_ALL_INCOME_BY_USER_ID_QUERY } from 'graphql/queries'
+import useSWR from 'swr'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -35,11 +37,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
   ])
   const [totalExpense, setTotalExpense] = useState(0.0)
   const [newBalance, setNewBalance] = useState(0.0)
+  const [balance, setBalance] = useState(0.0)
+  const user_id = session?.id
 
   // This will auto update the new balance and expenses
   useEffect(() => {
     let sumExpense = 0.0
-    let balance = 3846
     let newBalance = 0.0
 
     expenses.map(({ price }) => {
@@ -134,12 +137,38 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
     if (!session) router.push('/')
   }, [session])
 
+  const { data, mutate } = useSWR(
+    [GET_ALL_INCOME_BY_USER_ID_QUERY, user_id],
+    (query, user_id) => hasuraAdminClient.request(query, { user_id }),
+    { revalidateOnMount: true }
+  )
+
+  // This will persist the update balance
+  useEffect(() => {
+    mutate()
+    getUpdateBalance()
+  })
+
+  // This will calculate the new balance
+  function getUpdateBalance() {
+    let total = 0.0
+    data?.income.map(({ amount }) => {
+      total += amount
+    })
+    setBalance(total)
+  }
+
   // When rendering client side don't display anything until loading is complete
   if (typeof window !== 'undefined' && loading) return null
 
   return (
     <DefaultLayout metaHead={metaHead}>
-      <Header user={user} navigation={navigation} userNavigation={userNavigation} />
+      <Header
+        user={user}
+        navigation={navigation}
+        userNavigation={userNavigation}
+        balance={balance}
+      />
 
       <header className="bg-white shadow">
         <div className="flex items-center justify-between max-w-7xl mx-auto py-2 px-2 md:px-4 md:py-4 lg:px-8">
@@ -175,6 +204,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
                 onSubmit={handleExpenseSubmit}
                 totalExpense={totalExpense}
                 newBalance={newBalance}
+                balance={balance}
               />
               <button
                 onClick={() => setOpenExpense(true)}

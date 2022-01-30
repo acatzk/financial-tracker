@@ -14,6 +14,7 @@ interface ExpenseProps {
   onSubmit: any
   totalExpense: any
   newBalance: any
+  balance: number
 }
 
 const ExpenseDialog: React.FC<ExpenseProps> = ({
@@ -25,7 +26,8 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
   handleChangeInput,
   onSubmit,
   totalExpense,
-  newBalance
+  newBalance,
+  balance
 }) => {
   const {
     register,
@@ -50,7 +52,7 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                       <input
                         type="text"
                         disabled
-                        value="₱3,846"
+                        value={`₱${balance}`}
                         autoComplete="email"
                         className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                       />
