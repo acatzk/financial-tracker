@@ -120,10 +120,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
   }
 
   // Handle submission in expenses inputted
-  const handleExpenseSubmit = ({ date }, e) => {
+  const handleExpenseSubmit = async ({ date }, e) => {
     try {
-      const isSave = expenses.map(async ({ name, price }) => {
-        await hasuraAdminClient.request(CREATE_EXPENSES_MUTATION, {
+      // Check if the new balance less than 0
+      if (newBalance < 0) {
+        return toast.error('Insufficient Income to cover the expense', {
+          position: toast.POSITION.TOP_CENTER
+        })
+      }
+
+      // Insert all the expenses inputted
+      await expenses.map(async ({ name, price }) => {
+        return await hasuraAdminClient.request(CREATE_EXPENSES_MUTATION, {
           user_id: session?.id,
           date: date,
           prev_balance: balance,
@@ -132,14 +140,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
         })
       })
 
-      if (isSave) {
-        mutate()
-        toast.success(`Added total expense of ₱${totalExpense}!`)
-        e.target.reset()
-        setOpenExpense(false)
-      } else {
-        toast.error(`Something went wrong! Try again!`)
-      }
+      // Update total income minus the total expenses
+      await hasuraAdminClient.request(UPDATE_TOTAL_INCOME_MUTATION, {
+        user_id: session?.id,
+        income: newBalance
+      })
+
+      mutate()
+      toast.success(`Added total expense of ₱${totalExpense}!`)
+      e.target.reset()
+      setOpenExpense(false)
     } catch (err) {
       toast.error(`${err}`)
     }
@@ -149,52 +159,52 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
   const handleIncomeSubmit = async ({ income, amount, date_earned }, e) => {
     try {
       if (amount < 0) {
-        toast.error('Invalid amount!', {
+        return toast.error('Invalid amount!', {
           position: toast.POSITION.TOP_CENTER
         })
-      } else {
-        // Check total income from current user_id
-        const { total_income_aggregate } = await hasuraAdminClient.request(
-          GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY,
-          {
-            user_id: session?.id
-          }
-        )
-
-        // Extract the aggregated sum
-        const {
-          aggregate: {
-            sum: { sum }
-          }
-        } = total_income_aggregate
-
-        // Check if the user already inserted the income
-        if (!sum) {
-          // Insert total income
-          await hasuraAdminClient.request(ADD_TOTAL_INCOME_MUTATION, {
-            user_id: session?.id,
-            sum: parseFloat(amount.toString())
-          })
-        } else {
-          // Update total income
-          await hasuraAdminClient.request(UPDATE_TOTAL_INCOME_MUTATION, {
-            user_id: session?.id,
-            income: parseFloat(sum.toString()) + parseFloat(amount.toString())
-          })
-        }
-
-        await hasuraAdminClient.request(CREATE_INCOME_MUTATION, {
-          user_id: session?.id,
-          income_from: income,
-          amount: parseFloat(amount.toString()),
-          date_earned: date_earned
-        })
-
-        mutate()
-        toast.success(`Added ₱${amount} ${income.trim().replace(/^\w/, (c) => c.toUpperCase())}!`)
-        e.target.reset()
-        setOpenIncome(false)
       }
+
+      // Check total income from current user_id
+      const { total_income_aggregate } = await hasuraAdminClient.request(
+        GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY,
+        {
+          user_id: session?.id
+        }
+      )
+
+      // Extract the aggregated sum
+      const {
+        aggregate: {
+          sum: { sum }
+        }
+      } = total_income_aggregate
+
+      // Check if the user already inserted the income
+      if (!sum) {
+        // Insert total income
+        await hasuraAdminClient.request(ADD_TOTAL_INCOME_MUTATION, {
+          user_id: session?.id,
+          sum: parseFloat(amount.toString())
+        })
+      } else {
+        // Update total income
+        await hasuraAdminClient.request(UPDATE_TOTAL_INCOME_MUTATION, {
+          user_id: session?.id,
+          income: parseFloat(sum.toString()) + parseFloat(amount.toString())
+        })
+      }
+
+      await hasuraAdminClient.request(CREATE_INCOME_MUTATION, {
+        user_id: session?.id,
+        income_from: income,
+        amount: parseFloat(amount.toString()),
+        date_earned: date_earned
+      })
+
+      mutate()
+      toast.success(`Added ₱${amount} ${income.trim().replace(/^\w/, (c) => c.toUpperCase())}!`)
+      e.target.reset()
+      setOpenIncome(false)
     } catch (err) {
       toast.error(`${err}`)
     }
