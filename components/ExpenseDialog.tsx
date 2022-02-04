@@ -1,6 +1,6 @@
 import React from 'react'
 import Dialogs from './Dialog'
-import { classNames, MinusIcon, PlusIcon } from 'utils'
+import { classNames, MinusIcon, PlusIcon, Spinner } from 'utils'
 import { useForm } from 'react-hook-form'
 
 interface ExpenseProps {
@@ -12,8 +12,8 @@ interface ExpenseProps {
   handleRemoveExpenseFields: Function
   handleChangeInput: Function
   onSubmit: any
-  totalExpense: any
-  newBalance: any
+  totalExpense: number
+  newBalance: number
   balance: number
 }
 
@@ -51,10 +51,14 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                       </label>
                       <input
                         type="text"
-                        disabled
                         value={`₱${balance}`}
                         autoComplete="email"
-                        className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                        disabled
+                        className={classNames(
+                          'mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full',
+                          'shadow-sm sm:text-sm border-gray-300 rounded-md',
+                          isSubmitting ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''
+                        )}
                       />
                     </div>
                     <div className="col-span-6 sm:col-span-4">
@@ -62,9 +66,11 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                       <input
                         type="date"
                         disabled={isSubmitting}
+                        // value={new Date().toISOString().slice(0, 10)}
                         className={classNames(
                           'mt-1 block w-full',
                           'shadow-sm sm:text-sm rounded-md',
+                          'disabled:opacity-50 disabled:cursor-not-allowed',
                           errors.date?.type === 'required'
                             ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500'
                             : 'ring-indigo-200 focus:ring-indigo-500 border-gray-300'
@@ -92,7 +98,11 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                         type="text"
                         disabled
                         value={`₱${totalExpense}`}
-                        className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                        className={classNames(
+                          'mt-1 focus:ring-indigo-500 focus:border-indigo-500',
+                          'block w-full shadow-sm sm:text-sm border-gray-300 rounded-md',
+                          isSubmitting ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''
+                        )}
                       />
                     </div>
                     <div className="col-span-6 sm:col-span-4">
@@ -103,7 +113,11 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                         type="text"
                         disabled
                         value={`₱${newBalance}`}
-                        className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                        className={classNames(
+                          'mt-1 focus:ring-indigo-500 focus:border-indigo-500',
+                          'block w-full shadow-sm sm:text-sm border-gray-300 rounded-md',
+                          isSubmitting ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''
+                        )}
                       />
                     </div>
                   </div>
@@ -111,8 +125,13 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                 <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
                   <button
                     type="submit"
-                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Save
+                    className={classNames(
+                      'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm',
+                      'font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700',
+                      'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500',
+                      'disabled:opacity-50 disabled:cursor-not-allowed'
+                    )}>
+                    {isSubmitting ? <Spinner className="w-5 h-5 text-white" /> : 'Save'}
                   </button>
                 </div>
               </div>

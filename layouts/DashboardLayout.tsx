@@ -11,10 +11,16 @@ import { v4 as uuidv4 } from 'uuid'
 import { useSession } from 'next-auth/react'
 import IncomeDialog from 'components/IncomeDialog'
 import { toast } from 'react-toastify'
-import { CREATE_INCOME_MUTATION } from 'graphql/mutations'
 import { hasuraAdminClient } from 'lib/hasura-admin-client'
 import { GET_ALL_INCOME_BY_USER_ID_QUERY } from 'graphql/queries'
 import useSWR from 'swr'
+import {
+  CREATE_EXPENSES_MUTATION,
+  ADD_TOTAL_INCOME_MUTATION,
+  UPDATE_TOTAL_INCOME_MUTATION,
+  CREATE_INCOME_MUTATION
+} from 'graphql/mutations'
+import { GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY } from 'graphql/queries'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -40,10 +46,24 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
   const [balance, setBalance] = useState(0.0)
   const user_id = session?.id
 
-  // This will auto update the new balance and expenses
+  // Check if user is authenticated
+  useEffect(() => {
+    if (!session) router.push('/')
+  }, [session])
+
+  const { data, mutate } = useSWR(
+    [GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY, user_id],
+    (query, user_id) => hasuraAdminClient.request(query, { user_id }),
+    { revalidateOnMount: true }
+  )
+
+  // Auto update the new balance and expenses
   useEffect(() => {
     let sumExpense = 0.0
     let newBalance = 0.0
+
+    // Set the balance to the aggregated total income
+    setBalance(data?.total_income_aggregate?.aggregate?.sum?.sum)
 
     expenses.map(({ price }) => {
       return (sumExpense += parseFloat(price.toString()))
@@ -55,12 +75,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
     setNewBalance(newBalance)
   })
 
-  // This will check if the expenses insufficient or invalid
+  // Check if the expenses insufficient or invalid
   useEffect(() => {
     if (newBalance < 0) {
       toast.error('Insufficient Income to cover the expense', {
         position: toast.POSITION.TOP_CENTER
-      }) // alert('Insufficient Income to cover the expense')
+      })
     }
 
     expenses.map(({ price }) => {
@@ -99,16 +119,33 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
     setExpenses(newInputFields)
   }
 
-  // This will handle submission in expenses inputted
-  const handleExpenseSubmit = async (expenses, e) => {
+  // Handle submission in expenses inputted
+  const handleExpenseSubmit = ({ date }, e) => {
     try {
-      alert(expenses)
+      const isSave = expenses.map(async ({ name, price }) => {
+        await hasuraAdminClient.request(CREATE_EXPENSES_MUTATION, {
+          user_id: session?.id,
+          date: date,
+          prev_balance: balance,
+          name: name,
+          cost: price
+        })
+      })
+
+      if (isSave) {
+        mutate()
+        toast.success(`Added total expense of ₱${totalExpense}!`)
+        e.target.reset()
+        setOpenExpense(false)
+      } else {
+        toast.error(`Something went wrong! Try again!`)
+      }
     } catch (err) {
-      alert(err)
+      toast.error(`${err}`)
     }
   }
 
-  // This will submit the inputed income
+  // Submit the inputed income
   const handleIncomeSubmit = async ({ income, amount, date_earned }, e) => {
     try {
       if (amount < 0) {
@@ -116,46 +153,51 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
           position: toast.POSITION.TOP_CENTER
         })
       } else {
+        // Check total income from current user_id
+        const { total_income_aggregate } = await hasuraAdminClient.request(
+          GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY,
+          {
+            user_id: session?.id
+          }
+        )
+
+        // Extract the aggregated sum
+        const {
+          aggregate: {
+            sum: { sum }
+          }
+        } = total_income_aggregate
+
+        // Check if the user already inserted the income
+        if (!sum) {
+          // Insert total income
+          await hasuraAdminClient.request(ADD_TOTAL_INCOME_MUTATION, {
+            user_id: session?.id,
+            sum: parseFloat(amount.toString())
+          })
+        } else {
+          // Update total income
+          await hasuraAdminClient.request(UPDATE_TOTAL_INCOME_MUTATION, {
+            user_id: session?.id,
+            income: parseFloat(sum.toString()) + parseFloat(amount.toString())
+          })
+        }
+
         await hasuraAdminClient.request(CREATE_INCOME_MUTATION, {
           user_id: session?.id,
           income_from: income,
           amount: parseFloat(amount.toString()),
-          date_earned
+          date_earned: date_earned
         })
 
+        mutate()
         toast.success(`Added ₱${amount} ${income.trim().replace(/^\w/, (c) => c.toUpperCase())}!`)
         e.target.reset()
         setOpenIncome(false)
       }
     } catch (err) {
-      console.log(err)
+      toast.error(`${err}`)
     }
-  }
-
-  // This will check if user is authenticated
-  useEffect(() => {
-    if (!session) router.push('/')
-  }, [session])
-
-  const { data, mutate } = useSWR(
-    [GET_ALL_INCOME_BY_USER_ID_QUERY, user_id],
-    (query, user_id) => hasuraAdminClient.request(query, { user_id }),
-    { revalidateOnMount: true }
-  )
-
-  // This will persist the update balance
-  useEffect(() => {
-    mutate()
-    getUpdateBalance()
-  })
-
-  // This will calculate the new balance
-  function getUpdateBalance() {
-    let total = 0.0
-    data?.income.map(({ amount }) => {
-      total += amount
-    })
-    setBalance(total)
   }
 
   // When rendering client side don't display anything until loading is complete
@@ -167,7 +209,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
         user={user}
         navigation={navigation}
         userNavigation={userNavigation}
-        balance={balance}
+        total_income={balance ? balance : 0}
       />
 
       <header className="bg-white shadow">
@@ -204,7 +246,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
                 onSubmit={handleExpenseSubmit}
                 totalExpense={totalExpense}
                 newBalance={newBalance}
-                balance={balance}
+                balance={balance ? balance : 0}
               />
               <button
                 onClick={() => setOpenExpense(true)}
