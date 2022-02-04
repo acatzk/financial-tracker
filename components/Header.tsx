@@ -11,7 +11,6 @@ interface HeaderProps {
   user: any
   navigation: any
   userNavigation: any
-  initialIncome?: any
   total_income: number
 }
 
