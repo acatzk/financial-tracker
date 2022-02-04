@@ -18,7 +18,11 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, onSubmit }) => {
 
   return (
     <Dialogs open={open} setOpen={setOpen}>
-      <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      <div
+        className={classNames(
+          'inline-block align-bottom bg-white rounded-lg text-left',
+          'overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full'
+        )}>
         <div className="bg-white pt-6">
           <h2 className="text-center font-semibold text-xl text-gray-700">Add Income</h2>
           <div className="mt-5 md:mt-0 md:col-span-2">
@@ -33,10 +37,10 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, onSubmit }) => {
                       <input
                         type="date"
                         disabled={isSubmitting}
-                        value={new Date().toISOString().slice(0, 10)}
                         className={classNames(
-                          'mt-1 block w-full',
-                          'shadow-sm sm:text-sm rounded-md disabled:opacity-50 disabled:cursor-not-allowed',
+                          'mt-1 block py-2 w-full shadow-sm sm:text-md rounded-md',
+                          'disabled:opacity-50 disabled:cursor-not-allowed',
+                          'transition ease-in-out duration-150',
                           errors.date_earned?.type === 'required'
                             ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500'
                             : 'ring-indigo-200 focus:ring-indigo-500 border-gray-300'
@@ -56,8 +60,9 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, onSubmit }) => {
                         disabled={isSubmitting}
                         placeholder="Example: Work/Job, wages, tip, gift, donation etc."
                         className={classNames(
-                          'mt-1 block w-full',
-                          'shadow-sm sm:text-sm rounded-md disabled:opacity-50 disabled:cursor-not-allowed',
+                          'mt-1 block py-2 w-full shadow-sm sm:text-md rounded-md',
+                          'disabled:opacity-50 disabled:cursor-not-allowed',
+                          'transition ease-in-out duration-150',
                           errors.income?.type === 'required'
                             ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500'
                             : 'ring-indigo-200 focus:ring-indigo-500 border-gray-300'
@@ -75,8 +80,9 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, onSubmit }) => {
                         disabled={isSubmitting}
                         placeholder="Philippine Peso"
                         className={classNames(
-                          'mt-1 block w-full',
-                          'shadow-sm sm:text-sm rounded-md disabled:opacity-50 disabled:cursor-not-allowed',
+                          'mt-1 block w-full shadow-sm sm:text-md rounded-md',
+                          'disabled:opacity-50 disabled:cursor-not-allowed',
+                          'transition ease-in-out duration-150',
                           errors.amount?.type === 'required'
                             ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500'
                             : 'ring-indigo-200 focus:ring-indigo-500 border-gray-300'
@@ -97,7 +103,8 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, onSubmit }) => {
                       'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm',
                       'font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700',
                       'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500',
-                      'disabled:opacity-50 disabled:cursor-not-allowed'
+                      'disabled:opacity-50 disabled:cursor-not-allowed',
+                      'transition ease-in-out duration-150'
                     )}>
                     {isSubmitting ? <Spinner className="w-5 h-5 text-white" /> : 'Save'}
                   </button>

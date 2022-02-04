@@ -12,10 +12,10 @@ interface HeaderProps {
   navigation: any
   userNavigation: any
   initialIncome?: any
-  balance: number
+  total_income: number
 }
 
-const Header: React.FC<HeaderProps> = ({ navigation, userNavigation, balance }) => {
+const Header: React.FC<HeaderProps> = ({ navigation, userNavigation, total_income }) => {
   const { data: session } = useSession()
 
   return (
@@ -34,7 +34,7 @@ const Header: React.FC<HeaderProps> = ({ navigation, userNavigation, balance }) 
                     layout="intrinsic"
                   />
                   <h3 className="block md:hidden text-white font-medium py-1 px-2 rounded text-sm">
-                    Balance: <span className="font-semibold">₱{balance}</span>
+                    Balance: <span className="font-semibold">₱{total_income}</span>
                   </h3>
                 </div>
                 <div className="hidden md:block">
@@ -54,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({ navigation, userNavigation, balance }) 
                       </a>
                     ))}
                     <h3 className="text-white text-sm bg-indigo-600 py-1 px-2 rounded shadow">
-                      Balance: <span className="font-semibold">₱{balance}</span>
+                      Balance: <span className="font-semibold">₱{total_income}</span>
                     </h3>
                   </div>
                 </div>
