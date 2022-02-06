@@ -12,7 +12,6 @@ import { useSession } from 'next-auth/react'
 import IncomeDialog from 'components/IncomeDialog'
 import { toast } from 'react-toastify'
 import { hasuraAdminClient } from 'lib/hasura-admin-client'
-import { GET_ALL_INCOME_BY_USER_ID_QUERY } from 'graphql/queries'
 import useSWR from 'swr'
 import {
   CREATE_EXPENSES_MUTATION,
@@ -180,7 +179,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
       } = total_income_aggregate
 
       // Check if the user already inserted the income
-      if (!sum) {
+      if (sum === null) {
         // Insert total income
         await hasuraAdminClient.request(ADD_TOTAL_INCOME_MUTATION, {
           user_id: session?.id,
