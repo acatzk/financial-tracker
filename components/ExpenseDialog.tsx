@@ -1,39 +1,90 @@
 import React from 'react'
 import Dialogs from './Dialog'
 import { classNames, MinusIcon, PlusIcon, Spinner } from 'utils'
-import { useForm } from 'react-hook-form'
+import { useForm, SubmitHandler } from 'react-hook-form'
+import { toast } from 'react-toastify'
+import { hasuraAdminClient } from 'lib/hasura-admin-client'
+import { CREATE_EXPENSES_MUTATION, UPDATE_TOTAL_INCOME_MUTATION } from 'graphql/mutations'
+import { useSession } from 'next-auth/react'
 
 interface ExpenseProps {
   open: boolean
   setOpen: any
   expenses: any
   setExpenses: any
+  mutate: any
   handleAddExpenseFields: any
   handleRemoveExpenseFields: Function
   handleChangeInput: Function
-  onSubmit: any
   totalExpense: number
   newBalance: number
   balance: number
+}
+
+type FormValues = {
+  date: string
 }
 
 const ExpenseDialog: React.FC<ExpenseProps> = ({
   open,
   setOpen,
   expenses,
+  mutate,
   handleAddExpenseFields,
   handleRemoveExpenseFields,
   handleChangeInput,
-  onSubmit,
   totalExpense,
   newBalance,
   balance
 }) => {
+  const { data: session } = useSession()
+
   const {
     register,
     formState: { errors, isSubmitting },
     handleSubmit
-  } = useForm()
+  } = useForm<FormValues>({
+    mode: 'onChange',
+    defaultValues: {
+      date: new Date().toISOString().slice(0, 10)
+    }
+  })
+
+  // Handle submission in expenses inputted
+  const onSubmit: SubmitHandler<FormValues> = async ({ date }, e) => {
+    try {
+      // Check if the new balance less than 0
+      if (newBalance < 0) {
+        return toast.error('Insufficient Income to cover the expense', {
+          position: toast.POSITION.TOP_CENTER
+        })
+      }
+
+      // Insert all the expenses inputted
+      await expenses.map(async ({ name, price }) => {
+        return await hasuraAdminClient.request(CREATE_EXPENSES_MUTATION, {
+          user_id: session?.id,
+          date: date,
+          prev_balance: balance,
+          name: name,
+          cost: price
+        })
+      })
+
+      // Update total income minus the total expenses
+      await hasuraAdminClient.request(UPDATE_TOTAL_INCOME_MUTATION, {
+        user_id: session?.id,
+        income: newBalance
+      })
+
+      await mutate()
+      e?.target.reset()
+      setOpen(false)
+      toast.success(`Added total expense of ₱${totalExpense}!`)
+    } catch (err) {
+      toast.error(`${err}`)
+    }
+  }
 
   return (
     <Dialogs open={open} setOpen={setOpen}>
@@ -66,7 +117,6 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                       <input
                         type="date"
                         disabled={isSubmitting}
-                        // value={new Date().toISOString().slice(0, 10)}
                         className={classNames(
                           'mt-1 block w-full',
                           'shadow-sm sm:text-sm rounded-md',
@@ -88,6 +138,7 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                         handleChangeInput={handleChangeInput}
                         handleRemoveExpenseFields={handleRemoveExpenseFields}
                         handleAddExpenseFields={handleAddExpenseFields}
+                        isSubmitting={isSubmitting}
                       />
                     </div>
                     <div className="col-span-6 sm:col-span-4">
@@ -147,10 +198,17 @@ const ExpenseForm = ({
   expenses,
   handleChangeInput,
   handleRemoveExpenseFields,
-  handleAddExpenseFields
+  handleAddExpenseFields,
+  isSubmitting
 }) => {
   return expenses.map((expense) => (
-    <div key={expense.id} className="flex items-center space-x-3 space-y-2">
+    <div
+      key={expense.id}
+      className={classNames(
+        `flex items-center space-x-3 space-y-2 ${
+          isSubmitting ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''
+        }`
+      )}>
       <input
         type="text"
         name="name"
@@ -169,7 +227,10 @@ const ExpenseForm = ({
         placeholder="Price"
         value={expense.price}
         onChange={(event) => handleChangeInput(expense.id, event)}
-        className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        className={classNames(
+          'mt-1 focus:ring-indigo-500 focus:border-indigo-500',
+          'block w-full shadow-sm sm:text-sm border-gray-300 rounded-md'
+        )}
       />
       <div className="mt-1 flex items-center space-x-2">
         <button
@@ -185,7 +246,10 @@ const ExpenseForm = ({
         <button
           type="button"
           onClick={handleAddExpenseFields}
-          className="p-2 bg-white rounded border hover:bg-gray-50 active:bg-white transition ease-in-out duration-150">
+          className={classNames(
+            'p-2 bg-white rounded border hover:bg-gray-50',
+            'active:bg-white transition ease-in-out duration-150'
+          )}>
           <PlusIcon className="w-5 h-5 text-gray-600" />
         </button>
       </div>

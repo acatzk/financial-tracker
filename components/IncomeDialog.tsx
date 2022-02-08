@@ -1,20 +1,99 @@
 import React from 'react'
 import Dialogs from './Dialog'
 import { classNames, Spinner } from 'utils'
-import { useForm } from 'react-hook-form'
+import { useForm, SubmitHandler } from 'react-hook-form'
+import { toast } from 'react-toastify'
+import { hasuraAdminClient } from 'lib/hasura-admin-client'
+import { GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY } from 'graphql/queries'
+import { useSession } from 'next-auth/react'
+import {
+  ADD_TOTAL_INCOME_MUTATION,
+  CREATE_INCOME_MUTATION,
+  UPDATE_TOTAL_INCOME_MUTATION
+} from 'graphql/mutations'
 
 interface ExpenseProps {
   open: boolean
   setOpen: any
-  onSubmit: any
+  mutate: any
 }
 
-const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, onSubmit }) => {
+type FormValues = {
+  date_earned: string
+  income: string
+  amount: number
+}
+
+const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, mutate }) => {
+  const { data: session } = useSession()
+
   const {
     register,
     formState: { errors, isSubmitting },
     handleSubmit
-  } = useForm()
+  } = useForm<FormValues>({
+    mode: 'onChange',
+    defaultValues: {
+      date_earned: new Date().toISOString().slice(0, 10),
+      income: '',
+      amount: 0.0
+    }
+  })
+
+  // Submit the inputed income
+  const onSubmit: SubmitHandler<FormValues> = async ({ income, amount, date_earned }, e) => {
+    try {
+      if (amount <= 0) {
+        return toast.error('Invalid amount!', {
+          position: toast.POSITION.TOP_CENTER
+        })
+      }
+
+      // Check total income from current user_id
+      const { total_income_aggregate } = await hasuraAdminClient.request(
+        GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY,
+        {
+          user_id: session?.id
+        }
+      )
+
+      // Extract the aggregated sum
+      const {
+        aggregate: {
+          sum: { sum }
+        }
+      } = total_income_aggregate
+
+      // Check if the user already inserted the income
+      if (sum === null) {
+        // Insert total income
+        await hasuraAdminClient.request(ADD_TOTAL_INCOME_MUTATION, {
+          user_id: session?.id,
+          sum: parseFloat(amount.toString())
+        })
+      } else {
+        // Update total income
+        await hasuraAdminClient.request(UPDATE_TOTAL_INCOME_MUTATION, {
+          user_id: session?.id,
+          income: parseFloat(sum.toString()) + parseFloat(amount.toString())
+        })
+      }
+
+      await hasuraAdminClient.request(CREATE_INCOME_MUTATION, {
+        user_id: session?.id,
+        income_from: income,
+        amount: parseFloat(amount.toString()),
+        date_earned: date_earned
+      })
+
+      await mutate()
+      e?.target.reset()
+      setOpen(false)
+      toast.success(`Added ₱${amount} ${income.trim().replace(/^\w/, (c) => c.toUpperCase())}!`)
+    } catch (err) {
+      toast.error(`${err}`)
+    }
+  }
 
   return (
     <Dialogs open={open} setOpen={setOpen}>

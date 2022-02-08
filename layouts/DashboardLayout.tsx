@@ -13,12 +13,7 @@ import IncomeDialog from 'components/IncomeDialog'
 import { toast } from 'react-toastify'
 import { hasuraAdminClient } from 'lib/hasura-admin-client'
 import useSWR from 'swr'
-import {
-  CREATE_EXPENSES_MUTATION,
-  ADD_TOTAL_INCOME_MUTATION,
-  UPDATE_TOTAL_INCOME_MUTATION,
-  CREATE_INCOME_MUTATION
-} from 'graphql/mutations'
+import { CREATE_EXPENSES_MUTATION, UPDATE_TOTAL_INCOME_MUTATION } from 'graphql/mutations'
 import { GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY } from 'graphql/queries'
 
 interface DashboardLayoutProps {
@@ -118,97 +113,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
     setExpenses(newInputFields)
   }
 
-  // Handle submission in expenses inputted
-  const handleExpenseSubmit = async ({ date }, e) => {
-    try {
-      // Check if the new balance less than 0
-      if (newBalance < 0) {
-        return toast.error('Insufficient Income to cover the expense', {
-          position: toast.POSITION.TOP_CENTER
-        })
-      }
-
-      // Insert all the expenses inputted
-      await expenses.map(async ({ name, price }) => {
-        return await hasuraAdminClient.request(CREATE_EXPENSES_MUTATION, {
-          user_id: session?.id,
-          date: date,
-          prev_balance: balance,
-          name: name,
-          cost: price
-        })
-      })
-
-      // Update total income minus the total expenses
-      await hasuraAdminClient.request(UPDATE_TOTAL_INCOME_MUTATION, {
-        user_id: session?.id,
-        income: newBalance
-      })
-
-      mutate()
-      toast.success(`Added total expense of ₱${totalExpense}!`)
-      e.target.reset()
-      setOpenExpense(false)
-    } catch (err) {
-      toast.error(`${err}`)
-    }
-  }
-
-  // Submit the inputed income
-  const handleIncomeSubmit = async ({ income, amount, date_earned }, e) => {
-    try {
-      if (amount < 0) {
-        return toast.error('Invalid amount!', {
-          position: toast.POSITION.TOP_CENTER
-        })
-      }
-
-      // Check total income from current user_id
-      const { total_income_aggregate } = await hasuraAdminClient.request(
-        GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY,
-        {
-          user_id: session?.id
-        }
-      )
-
-      // Extract the aggregated sum
-      const {
-        aggregate: {
-          sum: { sum }
-        }
-      } = total_income_aggregate
-
-      // Check if the user already inserted the income
-      if (sum === null) {
-        // Insert total income
-        await hasuraAdminClient.request(ADD_TOTAL_INCOME_MUTATION, {
-          user_id: session?.id,
-          sum: parseFloat(amount.toString())
-        })
-      } else {
-        // Update total income
-        await hasuraAdminClient.request(UPDATE_TOTAL_INCOME_MUTATION, {
-          user_id: session?.id,
-          income: parseFloat(sum.toString()) + parseFloat(amount.toString())
-        })
-      }
-
-      await hasuraAdminClient.request(CREATE_INCOME_MUTATION, {
-        user_id: session?.id,
-        income_from: income,
-        amount: parseFloat(amount.toString()),
-        date_earned: date_earned
-      })
-
-      mutate()
-      toast.success(`Added ₱${amount} ${income.trim().replace(/^\w/, (c) => c.toUpperCase())}!`)
-      e.target.reset()
-      setOpenIncome(false)
-    } catch (err) {
-      toast.error(`${err}`)
-    }
-  }
-
   // When rendering client side don't display anything until loading is complete
   if (typeof window !== 'undefined' && loading) return null
 
@@ -226,18 +130,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
           <DashboardSubLinks dashboardLink={dashboardLink} />
           <div className="flex items-center space-x-2">
             <div>
-              <IncomeDialog
-                open={openIncome}
-                setOpen={setOpenIncome}
-                onSubmit={handleIncomeSubmit}
-              />
+              <IncomeDialog open={openIncome} setOpen={setOpenIncome} mutate={mutate} />
               <button
                 onClick={() => setOpenIncome(true)}
                 className={classNames(
                   'flex items-center space-x-1 bg-green-500 py-2 px-2',
                   'rounded text-white font-semibold text-sm',
                   'hover:bg-green-600 active:bg-green-500',
-                  'transition ease-in-out duration-200'
+                  'transition ease-in-out duration-200',
+                  'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
                 )}>
                 <PlusIcon className="w-5 h-5" />
                 <span className="hidden md:block">Income</span>
@@ -249,10 +150,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
                 setOpen={setOpenExpense}
                 expenses={expenses}
                 setExpenses={setExpenses}
+                mutate={mutate}
                 handleAddExpenseFields={handleAddExpenseFields}
                 handleRemoveExpenseFields={handleRemoveExpenseFields}
                 handleChangeInput={handleChangeInput}
-                onSubmit={handleExpenseSubmit}
                 totalExpense={totalExpense}
                 newBalance={newBalance}
                 balance={balance ? balance : 0}
@@ -262,7 +163,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
                 className={classNames(
                   'flex items-center space-x-1 bg-red-500 py-2 px-2 rounded text-white font-semibold text-sm',
                   'hover:bg-red-600 active:bg-red-500',
-                  'transition ease-in-out duration-200'
+                  'transition ease-in-out duration-200',
+                  'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
                 )}>
                 <PlusIcon className="w-5 h-5" />
                 <span className="hidden md:block">Expense</span>
