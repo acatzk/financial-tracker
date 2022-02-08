@@ -162,14 +162,19 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, mutate }) => {
                           'mt-1 block w-full shadow-sm sm:text-md rounded-md',
                           'disabled:opacity-50 disabled:cursor-not-allowed',
                           'transition ease-in-out duration-150',
-                          errors.amount?.type === 'required'
+                          errors.amount?.type === 'required' || errors.amount?.type === 'min'
                             ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500'
                             : 'ring-indigo-200 focus:ring-indigo-500 border-gray-300'
                         )}
-                        {...register('amount', { required: true })}
+                        {...register('amount', { required: true, min: 1 })}
                       />
                       {errors.amount?.type === 'required' && (
                         <span className="text-xs text-red-500 ml-2">Amount is required</span>
+                      )}
+                      {errors.amount?.type === 'min' && (
+                        <span className="text-xs text-red-500 ml-2">
+                          Minimum amount should be greater than zero
+                        </span>
                       )}
                     </div>
                   </div>
