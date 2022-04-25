@@ -2,8 +2,6 @@
 module.exports = {
   reactStrictMode: true,
   env: {
-    HASURA_GRAPHQL_API_ENDPOINT: process.env.HASURA_GRAPHQL_API_ENDPOINT,
-    HASURA_GRAPHQL_ADMIN_SECRET: process.env.HASURA_GRAPHQL_ADMIN_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     FACEBOOK_ID: process.env.FACEBOOK_ID,
     FACEBOOK_SECRET: process.env.FACEBOOK_SECRET,

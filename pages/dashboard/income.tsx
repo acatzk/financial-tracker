@@ -4,25 +4,12 @@ import DashboardLayout from 'layouts/DashboardLayout'
 import { Disclosure } from '@headlessui/react'
 import { ChevronUpIcon } from '@heroicons/react/solid'
 import { classNames } from 'utils'
-import { GET_USER_INCOME_QUERY } from 'graphql/queries'
-import useSWR from 'swr'
-import { hasuraAdminClient } from 'lib/hasura-admin-client'
-import { useSession, getSession } from 'next-auth/react'
 
 type IncomeProps = {
   initialData: any
 }
 
 const Income: NextPage<IncomeProps> = () => {
-  const { data: session } = useSession()
-  const user_id = session?.id
-
-  const { data, mutate } = useSWR(
-    [GET_USER_INCOME_QUERY, user_id],
-    (query, user_id) => hasuraAdminClient.request(query, { user_id }),
-    { revalidateOnMount: true }
-  )
-
   const income = [
     {
       date_from: '2022-02-08',
@@ -54,7 +41,6 @@ const Income: NextPage<IncomeProps> = () => {
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                 <div className="overflow-hidden border-b border-gray-200 space-y-2">
-                  <pre>{JSON.stringify(data, null, 2)}</pre>
                   <Disclosure>
                     {({ open }) => (
                       <>
