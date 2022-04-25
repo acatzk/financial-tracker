@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { classNames } from 'utils'
 import LoginWithButtons from 'components/LoginWithButtons'
 
-const Index: NextPage = () => {
+const SignUp: NextPage = () => {
   return (
     <DefaultLayout metaHead="Sign in">
       <div className="relative bg-white overflow-hidden">
@@ -24,10 +24,21 @@ const Index: NextPage = () => {
               <div className="card bg-red-400 shadow-lg  w-full h-full rounded-3xl absolute  transform rotate-6"></div>
               <div className="relative w-full rounded-3xl  px-6 py-4 bg-gray-100 shadow-md">
                 <label className="block mt-3 text-sm text-gray-700 text-center font-semibold">
-                  Login
+                  Sign up
                 </label>
                 <form method="#" action="#" className="mt-10">
                   <div>
+                    <input
+                      type="text"
+                      placeholder="Enter Name"
+                      className={classNames(
+                        'mt-1 block w-full border-none bg-gray-100 h-11 rounded-xl shadow-lg',
+                        'hover:bg-blue-100 focus:bg-blue-100 focus:ring-0 transition ease-in-out duration-150'
+                      )}
+                    />
+                  </div>
+
+                  <div className="mt-4">
                     <input
                       type="email"
                       placeholder="Enter Email"
@@ -38,7 +49,7 @@ const Index: NextPage = () => {
                     />
                   </div>
 
-                  <div className="mt-7">
+                  <div className="mt-4">
                     <input
                       type="password"
                       placeholder="Enter Password"
@@ -49,33 +60,13 @@ const Index: NextPage = () => {
                     />
                   </div>
 
-                  <div className="mt-7 flex">
-                    <label className="inline-flex items-center w-full cursor-pointer">
-                      <input
-                        type="checkbox"
-                        className={classNames(
-                          'rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring',
-                          'focus:ring-indigo-200 focus:ring-opacity-50'
-                        )}
-                        name="remember"
-                      />
-                      <span className="ml-2 text-sm text-gray-600">Remember me</span>
-                    </label>
-
-                    <div className="w-full text-right">
-                      <a className="underline text-sm text-gray-600 hover:text-gray-900" href="#">
-                        Forgot password?
-                      </a>
-                    </div>
-                  </div>
-
                   <div className="mt-7">
                     <button
                       className={classNames(
                         'bg-blue-500 w-full py-3 rounded-xl text-white shadow-xl hover:shadow-inner',
                         'focus:outline-none transition duration-500 ease-in-out  transform hover:-translate-x hover:scale-105'
                       )}>
-                      Login
+                      Sign Up
                     </button>
                   </div>
 
@@ -91,10 +82,10 @@ const Index: NextPage = () => {
 
                   <div className="mt-7">
                     <div className="flex justify-center items-center">
-                      <label className="mr-2 text-sm">You don't have an account?</label>
-                      <Link href="/sign-up">
+                      <label className="mr-2 text-sm">Do you have an account?</label>
+                      <Link href="/">
                         <a className="text-sm text-blue-500 transition duration-500 ease-in-out  transform hover:-translate-x hover:scale-105">
-                          Sign up
+                          Login
                         </a>
                       </Link>
                     </div>
@@ -109,4 +100,4 @@ const Index: NextPage = () => {
   )
 }
 
-export default Index
+export default SignUp
