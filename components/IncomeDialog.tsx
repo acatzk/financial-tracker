@@ -11,6 +11,7 @@ import {
   CREATE_INCOME_MUTATION,
   UPDATE_TOTAL_INCOME_MUTATION
 } from 'graphql/mutations'
+import { useRouter } from 'next/router'
 
 interface ExpenseProps {
   open: boolean
@@ -26,6 +27,7 @@ type FormValues = {
 
 const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, mutate }) => {
   const { data: session } = useSession()
+  const router = useRouter()
 
   const {
     register,
@@ -87,8 +89,8 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, mutate }) => {
       })
 
       await mutate()
-      e?.target.reset()
       setOpen(false)
+      router.push('/dashboard/income')
       toast.success(`Added ₱${amount} ${income.trim().replace(/^\w/, (c) => c.toUpperCase())}!`)
     } catch (err) {
       toast.error(`${err}`)

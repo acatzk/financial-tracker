@@ -13,10 +13,9 @@ import IncomeDialog from 'components/IncomeDialog'
 import { toast } from 'react-toastify'
 import { hasuraAdminClient } from 'lib/hasura-admin-client'
 import useSWR from 'swr'
-import { CREATE_EXPENSES_MUTATION, UPDATE_TOTAL_INCOME_MUTATION } from 'graphql/mutations'
 import { GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY } from 'graphql/queries'
 
-interface DashboardLayoutProps {
+type DashboardLayoutProps = {
   children: React.ReactNode
   metaHead?: string
 }
