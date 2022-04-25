@@ -9,20 +9,6 @@ import useSWR from 'swr'
 import { hasuraAdminClient } from 'lib/hasura-admin-client'
 import { useSession, getSession } from 'next-auth/react'
 
-// export const getStaticProps = async () => {
-//   const { data: session } = useSession()
-
-//   const initialData = await hasuraAdminClient.request(GET_USER_INCOME_QUERY, {
-//     user_id: session?.id
-//   })
-
-//   return {
-//     props: {
-//       initialData
-//     }
-//   }
-// }
-
 type IncomeProps = {
   initialData: any
 }
