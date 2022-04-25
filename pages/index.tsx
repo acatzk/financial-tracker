@@ -4,13 +4,24 @@ import { classNames } from 'utils'
 import LoginWithButtons from 'components/LoginWithButtons'
 import { useState } from 'react'
 import Image from 'next/image'
+import { useForm } from 'react-hook-form'
 
 const Index: NextPage = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { isSubmitting, errors }
+  } = useForm()
+
   let [isLoginPage, setIsLoginPage] = useState(true)
   const image_banner =
     'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1174&q=80'
 
   const handleAuthSwitchForm = () => setIsLoginPage((isLoginPage = !isLoginPage))
+
+  const onSubmitForm = () => {
+    alert('Hello')
+  }
 
   return (
     <DefaultLayout metaHead="Sign in">
@@ -34,40 +45,108 @@ const Index: NextPage = () => {
                 <label className="block mt-3 text-sm text-gray-700 text-center font-semibold">
                   {isLoginPage ? 'Login' : 'Sign Up'}
                 </label>
-                <form method="#" action="#" className="mt-10">
+                <form className="mt-10" onSubmit={handleSubmit(onSubmitForm)}>
                   {!isLoginPage && (
                     <div>
                       <input
                         type="text"
+                        disabled={isSubmitting}
                         placeholder="Enter Name"
                         className={classNames(
-                          'mt-1 block w-full border-none bg-gray-100 h-11 rounded-xl shadow-lg',
-                          'hover:bg-blue-100 focus:bg-blue-100 focus:ring-0 transition ease-in-out duration-150'
+                          'mt-1 block w-full border-none h-11 rounded-xl shadow-lg',
+                          'focus:ring-0 transition ease-in-out duration-150',
+                          'disabled:cursor-not-allowed disabled:opacity-50',
+                          errors?.display_name
+                            ? 'bg-red-100'
+                            : 'bg-gray-100 hover:bg-blue-100 focus:bg-blue-100'
                         )}
+                        {...register('display_name', {
+                          required: true,
+                          maxLength: 20,
+                          minLength: 4
+                        })}
                       />
+                      <div className="space-y-0.5 ml-1.5">
+                        {errors.display_name?.type === 'required' && (
+                          <span className="text-xs text-red-500 font-medium">Name is required</span>
+                        )}
+                        {errors.display_name?.type === 'maxLength' && (
+                          <span className="text-xs text-red-500 font-medium">
+                            Should have max length of 20
+                          </span>
+                        )}
+                        {errors.display_name?.type === 'minLength' && (
+                          <span className="text-xs text-red-500 font-medium">
+                            Name should not less then 4 length
+                          </span>
+                        )}
+                      </div>
                     </div>
                   )}
 
                   <div className="mt-4">
                     <input
                       type="email"
+                      disabled={isSubmitting}
                       placeholder="Enter Email"
                       className={classNames(
-                        'mt-1 block w-full border-none bg-gray-100 h-11 rounded-xl shadow-lg',
-                        'hover:bg-blue-100 focus:bg-blue-100 focus:ring-0 transition ease-in-out duration-150'
+                        'mt-1 block w-full border-none h-11 rounded-xl shadow-lg',
+                        'focus:ring-0 transition ease-in-out duration-150',
+                        'disabled:cursor-not-allowed disabled:opacity-50',
+                        errors?.email
+                          ? 'bg-red-100'
+                          : 'bg-gray-100 hover:bg-blue-100 focus:bg-blue-100'
                       )}
+                      {...register('email', {
+                        required: true,
+                        pattern: {
+                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                          message: 'Invalid email address'
+                        }
+                      })}
                     />
+                    <div className="space-y-0.5 ml-1.5">
+                      {errors.email?.type === 'required' && (
+                        <span className="text-xs text-red-500 font-medium">Email is required</span>
+                      )}
+                      {errors.email?.message && (
+                        <span className="text-xs text-red-500 font-medium">
+                          {errors.email?.message}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="mt-4">
                     <input
                       type="password"
+                      disabled={isSubmitting}
                       placeholder="Enter Password"
                       className={classNames(
-                        'mt-1 block w-full border-none bg-gray-100 h-11 rounded-xl shadow-lg hover:bg-blue-100',
-                        'focus:bg-blue-100 focus:ring-0 transition ease-in-out duration-150'
+                        'mt-1 block w-full border-none h-11 rounded-xl shadow-lg',
+                        'focus:ring-0 transition ease-in-out duration-150',
+                        'disabled:cursor-not-allowed disabled:opacity-50',
+                        errors?.password
+                          ? 'bg-red-100'
+                          : 'bg-gray-100 hover:bg-blue-100 focus:bg-blue-100'
                       )}
+                      {...register('password', {
+                        required: true,
+                        minLength: 4
+                      })}
                     />
+                    <div className="space-y-0.5 ml-1.5">
+                      {errors.password?.type === 'required' && (
+                        <span className="text-xs text-red-500 font-medium">
+                          Password is required
+                        </span>
+                      )}
+                      {errors.password?.type === 'minLength' && (
+                        <span className="text-xs text-red-500 font-medium">
+                          Minimum password length of 4
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {isLoginPage && (
@@ -75,9 +154,10 @@ const Index: NextPage = () => {
                       <label className="inline-flex items-center w-full cursor-pointer">
                         <input
                           type="checkbox"
+                          disabled={isSubmitting}
                           className={classNames(
-                            'rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring',
-                            'focus:ring-indigo-200 focus:ring-opacity-50'
+                            'rounded border-gray-300 text-blue-500 shadow-sm focus:border-blue-300 focus:ring',
+                            'focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:opacity-50'
                           )}
                           name="remember"
                         />
@@ -94,9 +174,12 @@ const Index: NextPage = () => {
 
                   <div className="mt-7">
                     <button
+                      type="submit"
+                      disabled={isSubmitting}
                       className={classNames(
                         'bg-blue-500 w-full py-3 rounded-xl text-white shadow-xl hover:shadow-inner',
-                        'focus:outline-none transition duration-500 ease-in-out  transform hover:-translate-x hover:scale-105'
+                        'focus:outline-none transition duration-500 ease-in-out  transform hover:-translate-x hover:scale-105',
+                        'disabled:cursor-not-allowed disabled:opacity-50'
                       )}>
                       {isLoginPage ? 'Login' : 'Sign Up'}
                     </button>
@@ -110,7 +193,7 @@ const Index: NextPage = () => {
                     <hr className="border-gray-300 border-1 w-full rounded-md" />
                   </div>
 
-                  <LoginWithButtons />
+                  <LoginWithButtons isSubmitting={isSubmitting} />
 
                   <div className="mt-7">
                     <div className="flex justify-center items-center">
@@ -118,8 +201,12 @@ const Index: NextPage = () => {
                         {!isLoginPage ? 'Do you have an account?' : "You don't have an account?"}
                       </label>
                       <button
+                        type="button"
                         onClick={handleAuthSwitchForm}
-                        className="text-sm text-blue-500 transition duration-500 ease-in-out  transform hover:-translate-x hover:scale-105">
+                        className={classNames(
+                          'text-sm text-blue-500 transition duration-500 ease-in-out',
+                          'transform hover:-translate-x hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50'
+                        )}>
                         {!isLoginPage ? 'Login' : 'Sign Up'}
                       </button>
                     </div>

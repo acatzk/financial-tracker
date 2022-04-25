@@ -3,10 +3,16 @@ import { AiFillGithub, AiFillGoogleCircle } from 'react-icons/ai'
 import { RiFacebookCircleFill } from 'react-icons/ri'
 import { classNames } from 'utils'
 
-const LoginWithButtons: React.FC = () => {
+type props = {
+  isSubmitting: boolean
+}
+
+const LoginWithButtons: React.FC<props> = ({ isSubmitting }) => {
   return (
     <div className="flex mt-7 justify-between w-full">
       <button
+        type="button"
+        disabled={isSubmitting}
         className={classNames(
           'flex items-center space-x-2 bg-[#3c3c3c] border-none px-3 py-1.5 rounded-xl cursor-pointer',
           'text-white shadow-xl hover:shadow-inner transition duration-500 ease-in-out  transform hover:-translate-x hover:scale-105'
@@ -16,6 +22,8 @@ const LoginWithButtons: React.FC = () => {
       </button>
 
       <button
+        type="button"
+        disabled={isSubmitting}
         className={classNames(
           'flex items-center space-x-2 bg-blue-500 border-none px-3 py-1.5 rounded-xl cursor-pointer text-white',
           'shadow-xl hover:shadow-inner transition duration-500 ease-in-out  transform hover:-translate-x hover:scale-105'
@@ -25,6 +33,8 @@ const LoginWithButtons: React.FC = () => {
       </button>
 
       <button
+        type="button"
+        disabled={isSubmitting}
         className={classNames(
           'flex items-center space-x-2 bg-red-500 border-none px-3 py-1.5 rounded-xl cursor-pointer text-white shadow-xl',
           'hover:shadow-inner transition duration-500 ease-in-out  transform hover:-translate-x hover:scale-105'
