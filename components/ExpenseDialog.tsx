@@ -7,7 +7,11 @@ import { hasuraAdminClient } from 'lib/hasura-admin-client'
 import { CREATE_EXPENSES_MUTATION, UPDATE_TOTAL_INCOME_MUTATION } from 'graphql/mutations'
 import { useSession } from 'next-auth/react'
 
-interface ExpenseProps {
+type FormValues = {
+  date: string
+}
+
+type ExpenseProps = {
   open: boolean
   setOpen: any
   expenses: any
@@ -21,10 +25,6 @@ interface ExpenseProps {
   balance: number
 }
 
-type FormValues = {
-  date: string
-}
-
 const ExpenseDialog: React.FC<ExpenseProps> = ({
   open,
   setOpen,
@@ -35,7 +35,7 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
   handleChangeInput,
   totalExpense,
   newBalance,
-  balance
+  balance = 23
 }) => {
   const { data: session } = useSession()
 
@@ -89,9 +89,18 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
   return (
     <Dialogs open={open} setOpen={setOpen}>
       <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-        <div className="bg-white pt-6">
-          <h2 className="text-center font-semibold text-xl text-gray-700">Add Today's Expenses</h2>
-          <div className="mt-5 md:mt-0 md:col-span-2">
+        {balance === 0 && (
+          <div className="bg-yellow-100 py-4 px-4">
+            <h1 className="font-bold text-sm text-yellow-900 text-center">
+              Please add income to cover the expense.
+            </h1>
+          </div>
+        )}
+        <div className="bg-white">
+          <h2 className="mt-6 text-center font-semibold text-xl text-gray-700">
+            Add Daily Expenses
+          </h2>
+          <div className="md:col-span-2">
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="overflow-hidden sm:rounded-md">
                 <div className="px-4 py-5 bg-white sm:p-6">
@@ -108,7 +117,9 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                         className={classNames(
                           'mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full',
                           'shadow-sm sm:text-sm border-gray-300 rounded-md',
-                          isSubmitting ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''
+                          isSubmitting || balance === 0
+                            ? 'disabled:opacity-50 disabled:cursor-not-allowed'
+                            : ''
                         )}
                       />
                     </div>
@@ -116,7 +127,7 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                       <label className="block text-sm font-medium text-gray-700">Date:</label>
                       <input
                         type="date"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || balance === 0}
                         className={classNames(
                           'mt-1 block w-full',
                           'shadow-sm sm:text-sm rounded-md',
@@ -139,6 +150,7 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                         handleRemoveExpenseFields={handleRemoveExpenseFields}
                         handleAddExpenseFields={handleAddExpenseFields}
                         isSubmitting={isSubmitting}
+                        balance={balance}
                       />
                     </div>
                     <div className="col-span-6 sm:col-span-4">
@@ -152,7 +164,9 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                         className={classNames(
                           'mt-1 focus:ring-indigo-500 focus:border-indigo-500',
                           'block w-full shadow-sm sm:text-sm border-gray-300 rounded-md',
-                          isSubmitting ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''
+                          isSubmitting || balance === 0
+                            ? 'disabled:opacity-50 disabled:cursor-not-allowed'
+                            : ''
                         )}
                       />
                     </div>
@@ -167,24 +181,28 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
                         className={classNames(
                           'mt-1 focus:ring-indigo-500 focus:border-indigo-500',
                           'block w-full shadow-sm sm:text-sm border-gray-300 rounded-md',
-                          isSubmitting ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''
+                          isSubmitting || balance === 0
+                            ? 'disabled:opacity-50 disabled:cursor-not-allowed'
+                            : ''
                         )}
                       />
                     </div>
                   </div>
                 </div>
-                <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
-                  <button
-                    type="submit"
-                    className={classNames(
-                      'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm',
-                      'font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700',
-                      'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500',
-                      'disabled:opacity-50 disabled:cursor-not-allowed'
-                    )}>
-                    {isSubmitting ? <Spinner className="w-5 h-5 text-white" /> : 'Save'}
-                  </button>
-                </div>
+                {balance !== 0 && (
+                  <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
+                    <button
+                      type="submit"
+                      className={classNames(
+                        'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm',
+                        'font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700',
+                        'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500',
+                        'disabled:opacity-50 disabled:cursor-not-allowed'
+                      )}>
+                      {isSubmitting ? <Spinner className="w-5 h-5 text-white" /> : 'Save'}
+                    </button>
+                  </div>
+                )}
               </div>
             </form>
           </div>
@@ -199,26 +217,29 @@ const ExpenseForm = ({
   handleChangeInput,
   handleRemoveExpenseFields,
   handleAddExpenseFields,
-  isSubmitting
+  isSubmitting,
+  balance
 }) => {
   return expenses.map((expense) => (
     <div
       key={expense.id}
       className={classNames(
         `flex items-center space-x-3 space-y-2 ${
-          isSubmitting ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''
+          isSubmitting || balance === 0 ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''
         }`
       )}>
       <input
         type="text"
         name="name"
         required
+        disabled={isSubmitting || balance === 0}
         placeholder="Name"
         value={expense.name}
         onChange={(event) => handleChangeInput(expense.id, event)}
         className={classNames(
           'mt-1 focus:ring-indigo-500 focus:border-indigo-500 block',
-          'w-full shadow-sm sm:text-sm border-gray-300 rounded-md'
+          'w-full shadow-sm sm:text-sm border-gray-300 rounded-md',
+          isSubmitting || balance === 0 ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''
         )}
       />
       <input
@@ -226,29 +247,33 @@ const ExpenseForm = ({
         name="price"
         placeholder="Price"
         value={expense.price}
+        disabled={isSubmitting || balance === 0}
         onChange={(event) => handleChangeInput(expense.id, event)}
         className={classNames(
           'mt-1 focus:ring-indigo-500 focus:border-indigo-500',
-          'block w-full shadow-sm sm:text-sm border-gray-300 rounded-md'
+          'block w-full shadow-sm sm:text-sm border-gray-300 rounded-md',
+          isSubmitting || balance === 0 ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''
         )}
       />
       <div className="mt-1 flex items-center space-x-2">
         <button
           type="button"
           onClick={() => handleRemoveExpenseFields(expense.id)}
-          disabled={expenses.length === 1}
+          disabled={expenses.length === 1 || isSubmitting || balance === 0}
           className={classNames(
             'p-2 bg-white rounded border hover:bg-gray-50 active:bg-white transition ease-in-out duration-150',
-            'disabled:bg-gray-200 disabled:cursor-not-allowed'
+            isSubmitting ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''
           )}>
           <MinusIcon className="w-5 h-5 text-gray-600" />
         </button>
         <button
           type="button"
           onClick={handleAddExpenseFields}
+          disabled={isSubmitting || balance === 0}
           className={classNames(
             'p-2 bg-white rounded border hover:bg-gray-50',
-            'active:bg-white transition ease-in-out duration-150'
+            'active:bg-white transition ease-in-out duration-150',
+            isSubmitting || balance === 0 ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''
           )}>
           <PlusIcon className="w-5 h-5 text-gray-600" />
         </button>

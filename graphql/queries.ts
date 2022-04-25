@@ -20,3 +20,16 @@ export const GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY = gql`
     }
   }
 `
+
+export const GET_USER_INCOME_QUERY = gql`
+  query getUserIncome($user_id: String!) {
+    income(where: {user_id: {_eq: $user_id}}, order_by: {created_at: desc}) {
+      id
+      user_id
+      amount
+      date_earned
+      income_from
+      created_at
+    }
+  }
+`

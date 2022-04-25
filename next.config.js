@@ -11,7 +11,8 @@ module.exports = {
     GITHUB_SECRET: process.env.GITHUB_SECRET,
     GOOGLE_ID: process.env.GOOGLE_ID,
     GOOGLE_SECRET: process.env.GOOGLE_SECRET,
-    SECRET: process.env.SECRET
+    SECRET: process.env.SECRET,
+    NEXT_PUBLIC_NHOST_BACKEND: process.env.NEXT_PUBLIC_NHOST_BACKEND
   },
   images: {
     domains: [
