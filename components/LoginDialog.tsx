@@ -2,7 +2,6 @@ import { IconType } from 'react-icons'
 import { classNames } from 'utils'
 import Dialogs from './Dialog'
 import { FaGithub, FaGoogle, FaFacebook } from 'react-icons/fa'
-import { signIn } from 'next-auth/react'
 
 interface LoginDialogProps {
   open: boolean

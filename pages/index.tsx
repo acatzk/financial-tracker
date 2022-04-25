@@ -1,12 +1,23 @@
 import { NextPage } from 'next'
 import DefaultLayout from 'layouts/DefaultLayout'
-import { classNames } from 'utils'
+import { classNames, Spinner } from 'utils'
 import LoginWithButtons from 'components/LoginWithButtons'
 import { useState } from 'react'
 import Image from 'next/image'
 import { useForm } from 'react-hook-form'
+import { toast } from 'react-toastify'
+import router from 'next/router'
+import { useProviderLink } from '@nhost/react'
+import { nhost } from 'lib/nhost-client'
+import { useAuthenticationStatus } from '@nhost/react'
 
 const Index: NextPage = () => {
+  const { isAuthenticated, isLoading } = useAuthenticationStatus()
+  const { facebook, github, google } = useProviderLink()
+
+  const image_banner =
+    'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1174&q=80'
+
   const {
     register,
     handleSubmit,
@@ -14,17 +25,71 @@ const Index: NextPage = () => {
   } = useForm()
 
   let [isLoginPage, setIsLoginPage] = useState(true)
-  const image_banner =
-    'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1174&q=80'
 
   const handleAuthSwitchForm = () => setIsLoginPage((isLoginPage = !isLoginPage))
 
-  const onSubmitForm = () => {
-    alert('Hello')
+  const onSubmitForm = async (data) => {
+    const { display_name, email, password } = data
+
+    if (isLoginPage) {
+      const { session, error } = await nhost.auth.signIn({
+        email: email,
+        password: password
+      })
+      isSuccess(session, error)
+    } else {
+      const { session, error } = await nhost.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          displayName: display_name
+        }
+      })
+      isSuccess(session, error)
+    }
   }
 
+  const isSuccess = (session, error) => {
+    if (error) {
+      console.log(error)
+      toast.error(`Invalid credentials!`, {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined
+      })
+    } else {
+      console.log(session)
+      const {
+        user: { displayName }
+      } = session
+      toast.success(`🦄 Welcome back ${displayName}`, {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined
+      })
+    }
+  }
+
+  if (isLoading)
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <Spinner className="w-14 h-14" />
+        <p className="text-xs mt-1">Loading...</p>
+      </div>
+    )
+
+  if (isAuthenticated) router.push('/temporarypage')
+
   return (
-    <DefaultLayout metaHead="Sign in">
+    <DefaultLayout metaHead={isLoginPage ? 'Login' : 'Sign Up'}>
       <div className="relative bg-white overflow-hidden">
         <div className="flex min-h-screen">
           <div className="relative w-0 md:w-1/2">
@@ -193,7 +258,7 @@ const Index: NextPage = () => {
                     <hr className="border-gray-300 border-1 w-full rounded-md" />
                   </div>
 
-                  <LoginWithButtons isSubmitting={isSubmitting} />
+                  <LoginWithButtons google={google} facebook={facebook} github={github} />
 
                   <div className="mt-7">
                     <div className="flex justify-center items-center">
