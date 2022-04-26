@@ -2,7 +2,7 @@ import { NextPage } from 'next'
 import DefaultLayout from 'layouts/DefaultLayout'
 import { classNames, Spinner } from 'utils'
 import LoginWithButtons from 'components/LoginWithButtons'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
@@ -27,6 +27,11 @@ const Index: NextPage = () => {
   let [isLoginPage, setIsLoginPage] = useState(true)
 
   const handleAuthSwitchForm = () => setIsLoginPage((isLoginPage = !isLoginPage))
+
+  // Check if user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) router.push('/dashboard/overview') // dashboard/overview
+  }, [isAuthenticated])
 
   const onSubmitForm = async (data) => {
     const { display_name, email, password } = data
@@ -85,8 +90,6 @@ const Index: NextPage = () => {
         <p className="text-xs mt-1">Loading...</p>
       </div>
     )
-
-  if (isAuthenticated) router.push('/temporarypage')
 
   return (
     <DefaultLayout metaHead={isLoginPage ? 'Login' : 'Sign Up'}>

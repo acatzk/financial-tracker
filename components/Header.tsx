@@ -3,9 +3,8 @@ import { classNames } from 'utils'
 import { Fragment } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
+import { useSignOut } from '@nhost/nextjs'
 import Image from 'next/image'
-import { signOut } from 'next-auth/react'
-import { useSession } from 'next-auth/react'
 
 interface HeaderProps {
   user: any
@@ -14,8 +13,9 @@ interface HeaderProps {
   total_income: number
 }
 
-const Header: React.FC<HeaderProps> = ({ navigation, userNavigation, total_income }) => {
-  const { data: session } = useSession()
+const Header: React.FC<HeaderProps> = (props) => {
+  const signOut = useSignOut()
+  const { user, navigation, userNavigation, total_income } = props
 
   return (
     <Disclosure as="nav" className="bg-indigo-800">
@@ -26,11 +26,12 @@ const Header: React.FC<HeaderProps> = ({ navigation, userNavigation, total_incom
               <div className="flex items-center">
                 <div className="flex items-center space-x-3 flex-shrink-0">
                   <Image
+                    src="https://tailwindui.com/img/logos/workflow-mark-indigo-500.svg"
                     width={32}
                     height={32}
-                    src="https://tailwindui.com/img/logos/workflow-mark-indigo-500.svg"
                     alt="Workflow"
                     layout="intrinsic"
+                    quality={75}
                   />
                   <h3 className="block md:hidden text-white font-medium py-1 px-2 rounded text-sm">
                     Balance: <span className="font-semibold">₱{total_income}</span>
@@ -65,7 +66,7 @@ const Header: React.FC<HeaderProps> = ({ navigation, userNavigation, total_incom
                     <div>
                       <Menu.Button className="max-w-xs bg-indigo-800 rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-indigo-800 focus:ring-white">
                         <span className="sr-only">Open user menu</span>
-                        <UserAvatar user={session?.user} />
+                        <UserAvatar user={user} />
                       </Menu.Button>
                     </div>
                     <Transition
@@ -82,7 +83,7 @@ const Header: React.FC<HeaderProps> = ({ navigation, userNavigation, total_incom
                             {({ active }) => (
                               <a
                                 href={item.href}
-                                onClick={() => item.name === 'Sign out' && signOut()}
+                                onClick={() => item.name === 'Sign out' && signOut.signOut()}
                                 className={classNames(
                                   active ? 'bg-gray-100' : '',
                                   'block px-4 py-2 text-sm text-gray-700'
@@ -132,14 +133,14 @@ const Header: React.FC<HeaderProps> = ({ navigation, userNavigation, total_incom
             <div className="pt-4 pb-3 border-t border-indigo-700">
               <div className="flex items-center px-5">
                 <div className="flex-shrink-0">
-                  <UserAvatar user={session?.user} />
+                  <UserAvatar user={user} />
                 </div>
                 <div className="ml-3">
                   <div className="text-base font-medium leading-none text-white">
-                    {session?.user?.name}
+                    {user?.displayName}
                   </div>
                   <div className="text-sm font-medium leading-none text-indigo-400">
-                    {session?.user?.email}
+                    {user?.email}
                   </div>
                 </div>
               </div>
@@ -149,7 +150,7 @@ const Header: React.FC<HeaderProps> = ({ navigation, userNavigation, total_incom
                     key={item.name}
                     as="a"
                     href={item.href}
-                    onClick={() => item.name === 'Sign out' && signOut()}
+                    onClick={() => item.name === 'Sign out' && signOut.signOut()}
                     className="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-indigo-700">
                     {item.name}
                   </Disclosure.Button>
@@ -164,19 +165,23 @@ const Header: React.FC<HeaderProps> = ({ navigation, userNavigation, total_incom
 }
 
 function UserAvatar({ user }) {
-  return (
+  return user?.avatarUrl ? (
     <Image
-      src={
-        user
-          ? user?.image
-          : 'https://th.bing.com/th/id/OIP.VU9SCHlocbhk9w84KYbmvgHaEF?w=297&h=180&c=7&r=0&o=5&pid=1.7'
-      }
+      src={user?.avatarUrl}
       width={32}
       height={32}
       className="rounded-full"
       layout="intrinsic"
-      quality={75}
-      alt=""
+      alt="avatar"
+    />
+  ) : (
+    <Image
+      src="https://th.bing.com/th/id/OIP.o5hnVgDkhrAIKPAUMAtzcAHaHa?w=166&h=180&c=7&r=0&o=5&pid=1.7"
+      width={32}
+      height={32}
+      className="rounded-full"
+      layout="intrinsic"
+      alt="avatar"
     />
   )
 }

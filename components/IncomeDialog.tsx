@@ -3,17 +3,17 @@ import Dialogs from './Dialog'
 import { classNames, Spinner } from 'utils'
 import { useForm, SubmitHandler } from 'react-hook-form'
 import { toast } from 'react-toastify'
-import { hasuraAdminClient } from 'lib/hasura-admin-client'
 import { GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY } from 'graphql/queries'
-import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/router'
+import { nhost } from 'lib/nhost-client'
+import { useUserData } from '@nhost/react'
 import {
   ADD_TOTAL_INCOME_MUTATION,
   CREATE_INCOME_MUTATION,
   UPDATE_TOTAL_INCOME_MUTATION
 } from 'graphql/mutations'
-import { useRouter } from 'next/router'
 
-interface ExpenseProps {
+type ExpenseProps = {
   open: boolean
   setOpen: any
   mutate: any
@@ -26,13 +26,14 @@ type FormValues = {
 }
 
 const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, mutate }) => {
-  const { data: session } = useSession()
   const router = useRouter()
+  const user = useUserData()
 
   const {
     register,
     formState: { errors, isSubmitting },
-    handleSubmit
+    handleSubmit,
+    reset
   } = useForm<FormValues>({
     mode: 'onChange',
     defaultValues: {
@@ -51,13 +52,14 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, mutate }) => {
         })
       }
 
+      let result = ''
+
       // Check total income from current user_id
-      const { total_income_aggregate } = await hasuraAdminClient.request(
-        GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY,
-        {
-          user_id: session?.id
-        }
-      )
+      const {
+        data: { total_income_aggregate }
+      } = await nhost.graphql.request(GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY, {
+        user_id: user?.id
+      })
 
       // Extract the aggregated sum
       const {
@@ -69,20 +71,20 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, mutate }) => {
       // Check if the user already inserted the income
       if (sum === null) {
         // Insert total income
-        await hasuraAdminClient.request(ADD_TOTAL_INCOME_MUTATION, {
-          user_id: session?.id,
+        await nhost.graphql.request(ADD_TOTAL_INCOME_MUTATION, {
+          user_id: user?.id,
           sum: parseFloat(amount.toString())
         })
       } else {
         // Update total income
-        await hasuraAdminClient.request(UPDATE_TOTAL_INCOME_MUTATION, {
-          user_id: session?.id,
+        await nhost.graphql.request(UPDATE_TOTAL_INCOME_MUTATION, {
+          user_id: user?.id,
           income: parseFloat(sum.toString()) + parseFloat(amount.toString())
         })
       }
 
-      await hasuraAdminClient.request(CREATE_INCOME_MUTATION, {
-        user_id: session?.id,
+      await nhost.graphql.request(CREATE_INCOME_MUTATION, {
+        user_id: user?.id,
         income_from: income,
         amount: parseFloat(amount.toString()),
         date_earned: date_earned
@@ -91,6 +93,7 @@ const IncomeDialog: React.FC<ExpenseProps> = ({ open, setOpen, mutate }) => {
       await mutate()
       setOpen(false)
       router.push('/dashboard/income')
+      reset()
       toast.success(`Added ₱${amount} ${income.trim().replace(/^\w/, (c) => c.toUpperCase())}!`)
     } catch (err) {
       toast.error(`${err}`)
