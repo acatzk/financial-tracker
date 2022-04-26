@@ -15,6 +15,7 @@ import { GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY } from 'graphql/queries'
 import { getNhostSession, useAuthenticated, useUserData } from '@nhost/nextjs'
 import { GetServerSidePropsContext } from 'next'
 import { nhost } from 'lib/nhost-client'
+import { authProtected } from 'utils/auth-protected'
 
 type DashboardLayoutProps = {
   children: React.ReactNode
@@ -33,9 +34,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
   const { children, metaHead } = props
-  const authenticated = useAuthenticated()
   const user = useUserData()
-  const router = useRouter()
 
   const [openIncome, setOpenIncome] = useState(false)
   const [openExpense, setOpenExpense] = useState(false)
@@ -50,11 +49,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
   const [newBalance, setNewBalance] = useState(0.0)
   const [balance, setBalance] = useState(0.0)
   const user_id = user?.id
-
-  // Check if user is authenticated
-  useEffect(() => {
-    if (!authenticated) router.push('/')
-  }, [authenticated])
 
   const { data, mutate } = useSWR(
     [GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY, user_id],
@@ -214,4 +208,4 @@ function DashboardSubLinks({ dashboardLink }) {
   )
 }
 
-export default DashboardLayout
+export default authProtected(DashboardLayout)
