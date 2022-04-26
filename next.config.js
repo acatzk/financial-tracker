@@ -19,7 +19,9 @@ module.exports = {
       'media.istockphoto.com',
       'avatars.githubusercontent.com',
       'th.bing.com',
-      'lh3.googleusercontent.com'
+      'lh3.googleusercontent.com',
+      's.gravatar.com',
+      'platform-lookaside.fbsbx.com'
     ]
   }
 }

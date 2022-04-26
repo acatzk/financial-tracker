@@ -3,9 +3,9 @@ import Dialogs from './Dialog'
 import { classNames, MinusIcon, PlusIcon, Spinner } from 'utils'
 import { useForm, SubmitHandler } from 'react-hook-form'
 import { toast } from 'react-toastify'
-import { hasuraAdminClient } from 'lib/hasura-admin-client'
 import { CREATE_EXPENSES_MUTATION, UPDATE_TOTAL_INCOME_MUTATION } from 'graphql/mutations'
-import { useSession } from 'next-auth/react'
+import { useUserData } from '@nhost/react'
+import { nhost } from 'lib/nhost-client'
 
 type FormValues = {
   date: string
@@ -37,12 +37,13 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
   newBalance,
   balance = 23
 }) => {
-  const { data: session } = useSession()
+  const user = useUserData()
 
   const {
     register,
     formState: { errors, isSubmitting },
-    handleSubmit
+    handleSubmit,
+    reset
   } = useForm<FormValues>({
     mode: 'onChange',
     defaultValues: {
@@ -62,8 +63,8 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
 
       // Insert all the expenses inputted
       await expenses.map(async ({ name, price }) => {
-        return await hasuraAdminClient.request(CREATE_EXPENSES_MUTATION, {
-          user_id: session?.id,
+        return await nhost.graphql.request(CREATE_EXPENSES_MUTATION, {
+          user_id: user?.id,
           date: date,
           prev_balance: balance,
           name: name,
@@ -72,12 +73,13 @@ const ExpenseDialog: React.FC<ExpenseProps> = ({
       })
 
       // Update total income minus the total expenses
-      await hasuraAdminClient.request(UPDATE_TOTAL_INCOME_MUTATION, {
-        user_id: session?.id,
+      await nhost.graphql.request(UPDATE_TOTAL_INCOME_MUTATION, {
+        user_id: user?.id,
         income: newBalance
       })
 
       await mutate()
+      reset()
       e?.target.reset()
       setOpen(false)
       toast.success(`Added total expense of ₱${totalExpense}!`)

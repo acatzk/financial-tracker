@@ -1,29 +1,41 @@
 import DefaultLayout from 'layouts/DefaultLayout'
 import React, { useEffect, useState } from 'react'
 import Header from 'components/Header'
-import { navigation, user, userNavigation } from 'mock/list'
+import { navigation, userNavigation } from 'mock/list'
 import { classNames, PlusIcon } from 'utils'
 import { dashboardLink } from 'mock/list'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import ExpenseDialog from 'components/ExpenseDialog'
 import { v4 as uuidv4 } from 'uuid'
-import { useSession } from 'next-auth/react'
 import IncomeDialog from 'components/IncomeDialog'
 import { toast } from 'react-toastify'
-import { hasuraAdminClient } from 'lib/hasura-admin-client'
 import useSWR from 'swr'
 import { GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY } from 'graphql/queries'
+import { getNhostSession, useAuthenticated, useUserData } from '@nhost/nextjs'
+import { GetServerSidePropsContext } from 'next'
+import { nhost } from 'lib/nhost-client'
 
 type DashboardLayoutProps = {
   children: React.ReactNode
   metaHead?: string
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead }) => {
+export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+  const nhostSession = await getNhostSession(`${process.env.NEXT_PUBLIC_NHOST_BACKEND}`, context)
+
+  return {
+    props: {
+      nhostSession
+    }
+  }
+}
+
+const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
+  const { children, metaHead } = props
+  const authenticated = useAuthenticated()
+  const user = useUserData()
   const router = useRouter()
-  const { data: session, status } = useSession()
-  const loading = status === 'loading'
 
   const [openIncome, setOpenIncome] = useState(false)
   const [openExpense, setOpenExpense] = useState(false)
@@ -37,16 +49,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
   const [totalExpense, setTotalExpense] = useState(0.0)
   const [newBalance, setNewBalance] = useState(0.0)
   const [balance, setBalance] = useState(0.0)
-  const user_id = session?.id
+  const user_id = user?.id
 
   // Check if user is authenticated
   useEffect(() => {
-    if (!session) router.push('/')
-  }, [session])
+    if (!authenticated) router.push('/')
+  }, [authenticated])
 
   const { data, mutate } = useSWR(
     [GET_AGGREGATE_TOTAL_INCOME_SUM_QUERY, user_id],
-    (query, user_id) => hasuraAdminClient.request(query, { user_id }),
+    (query, user_id) => nhost.graphql.request(query, { user_id }),
     { revalidateOnMount: true }
   )
 
@@ -56,7 +68,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
     let newBalance = 0.0
 
     // Set the balance to the aggregated total income
-    setBalance(data?.total_income_aggregate?.aggregate?.sum?.sum)
+    setBalance(data?.data?.total_income_aggregate?.aggregate?.sum?.sum)
 
     expenses.map(({ price }) => {
       return (sumExpense += parseFloat(price.toString()))
@@ -111,9 +123,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, metaHead })
 
     setExpenses(newInputFields)
   }
-
-  // When rendering client side don't display anything until loading is complete
-  if (typeof window !== 'undefined' && loading) return null
 
   return (
     <DefaultLayout metaHead={metaHead}>
